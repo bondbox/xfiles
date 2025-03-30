@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # coding:utf-8
 
+import hashlib
 import os
 import shutil
 import unittest
@@ -52,9 +53,9 @@ class TestScanner(unittest.TestCase):
             self.assertIsInstance(object.islink, bool)
 
             if object.isfile and not object.issym:
-                self.assertIsInstance(object.md5, str)
-                self.assertIsInstance(object.sha1, str)
-                self.assertIsInstance(object.sha256, str)
+                self.assertIsInstance(object.hash(hashlib.md5())[0], str)
+                self.assertIsInstance(object.hash(hashlib.sha1())[0], str)
+                self.assertIsInstance(object.hash(hashlib.sha256())[0], str)
 
     def test_dirs(self):
         for object in self.scanner.dirs:
