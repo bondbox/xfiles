@@ -8,7 +8,6 @@ from queue import Empty
 from queue import Queue
 import stat
 from threading import Thread
-from threading import current_thread  # noqa:H306
 from typing import Callable
 from typing import Dict
 from typing import Generator
@@ -16,8 +15,6 @@ from typing import List
 from typing import Optional
 from typing import Sequence
 from typing import Set
-
-from xkits_command.actuator import Command
 
 CPU_COUNT = os.cpu_count()
 THDNUM_MINIMUM = 1
@@ -186,7 +183,6 @@ class Scanner:
         assert isinstance(linkdir, bool)
         assert isinstance(threads, int)
 
-        cmds = Command()
         thds = min(max(THDNUM_MINIMUM, threads), THDNUM_MAXIMUM)
 
         def rpath(path: str) -> str:
@@ -216,8 +212,6 @@ class Scanner:
 
         def task_scan_path():
             scanned_dirs = set()
-            name = current_thread().name
-            cmds.logger.debug("task thread[%s] start", name)
             while not scan_stat.exit or not scan_stat.q_path.empty():
                 try:
                     path = scan_stat.q_path.get(timeout=0.01)
@@ -228,7 +222,6 @@ class Scanner:
                 assert isinstance(path, str)
 
                 if path in scan_stat.filter or not os.path.exists(path):
-                    cmds.logger.debug("scan filter %s", path)
                     scan_stat.q_path.task_done()
                     continue
 
@@ -250,21 +243,16 @@ class Scanner:
                 if ret is True:
                     scan_stat.q_task.put(obj)
                 scan_stat.q_path.task_done()
-            cmds.logger.debug("task thread[%s] exit", name)
 
         def task_scan():
-            name = current_thread().name
-            cmds.logger.debug("task thread[%s] start", name)
             while not scan_stat.exit or not scan_stat.q_task.empty():
                 try:
                     obj = scan_stat.q_task.get(timeout=0.01)
                 except Empty:
                     continue
 
-                cmds.logger.debug("scan %s", obj.path)
                 scan_stat.scanner.add(obj=obj)
                 scan_stat.q_task.task_done()
-            cmds.logger.debug("task thread[%s] exit", name)
 
         task_threads: List[Thread] = []
         task_threads.append(Thread(target=task_scan, name="xkits-scan"))
