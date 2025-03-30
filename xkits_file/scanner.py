@@ -1,8 +1,5 @@
 # coding:utf-8
 
-from hashlib import md5
-from hashlib import sha1
-from hashlib import sha256
 import os
 from queue import Empty
 from queue import Queue
@@ -10,11 +7,11 @@ import stat
 from threading import Thread
 from typing import Callable
 from typing import Dict
-from typing import Generator
 from typing import List
 from typing import Optional
 from typing import Sequence
 from typing import Set
+from typing import Tuple
 
 CPU_COUNT = os.cpu_count()
 THDNUM_MINIMUM = 1
@@ -105,31 +102,16 @@ class Scanner:
         def issym(self) -> bool:
             return self.islink
 
-        def hash(self, *args, size=1024**2) -> Generator[str, None, None]:
+        def hash(self, *args, chunk=1048576) -> Tuple[str, ...]:
             assert self.isfile and not self.issym
             with open(self.abspath, "rb") as fhandler:
                 while True:
-                    data = fhandler.read(size)
+                    data = fhandler.read(chunk)
                     if not data:
                         break
-                    for obj in args:
-                        obj.update(data)
-            return (obj.hexdigest() for obj in args)
-
-        @property
-        def md5(self) -> str:
-            code, = self.hash(md5())
-            return code
-
-        @property
-        def sha1(self) -> str:
-            code, = self.hash(sha1())
-            return code
-
-        @property
-        def sha256(self) -> str:
-            code, = self.hash(sha256())
-            return code
+                    for _hash in args:
+                        _hash.update(data)
+            return tuple(_hash.hexdigest() for _hash in args)
 
     def __init__(self):
         self.__objdict: Dict[str, Scanner.Object] = {}
