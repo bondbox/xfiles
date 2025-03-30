@@ -20,6 +20,10 @@ def main():
     import xkits_file  # noqa:F401
     print("After import:")
     memory_info(process)
+    from xkits_file import scanner  # noqa:F401
+    memory_info(process)
+    from xkits_file import safefile  # noqa:F401
+    memory_info(process)
     print("Goodbye!")
 
 
