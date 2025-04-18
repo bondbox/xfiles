@@ -1,9 +1,6 @@
 # coding=utf-8
 
 import os
-import shutil
-
-from filelock import FileLock
 
 
 class SafeFile:
@@ -15,6 +12,8 @@ class SafeFile:
     @classmethod
     def lock(cls, origin: str):
         """Unified file lock"""
+        from filelock import FileLock  # pylint: disable=C0415
+
         return FileLock(f"{origin}.lock")
 
     @classmethod
@@ -40,6 +39,9 @@ class SafeFile:
         if not os.path.exists(path):  # No need for backup
             return True
         assert os.path.isfile(path), f"'{path}' is not a regular file"
+
+        import shutil  # pylint: disable=import-outside-toplevel
+
         method = shutil.copy2 if copy else shutil.move
         assert method(src=path, dst=pbak) == pbak, f"backup '{path}' failed"
         return os.path.exists(pbak)
@@ -59,6 +61,9 @@ class SafeFile:
         if os.path.isfile(pbak):
             if os.path.isfile(path):
                 os.remove(path)
+
+            import shutil  # pylint: disable=import-outside-toplevel
+
             assert not os.path.exists(path), f"file '{path}' still exists"
             assert shutil.move(src=pbak, dst=path) == path, \
                 f"restore backup file '{pbak}' to '{path}' failed"
