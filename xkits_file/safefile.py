@@ -7,24 +7,24 @@ from filelock import FileLock
 
 
 class SafeFile:
-    '''Secure read and write files
+    """Secure read and write files
 
     Backup before writing and restore (if backup exists) before reading.
-    '''
+    """
 
     @classmethod
     def lock(cls, origin: str):
-        '''Unified file lock'''
+        """Unified file lock"""
         return FileLock(f"{origin}.lock")
 
     @classmethod
     def get_backup_path(cls, origin: str) -> str:
-        '''Unified backup path'''
+        """Unified backup path"""
         return f"{origin}.bak"
 
     @classmethod
     def create_backup(cls, path: str, copy: bool = False) -> bool:
-        '''Create a backup before writing file
+        """Create a backup before writing file
 
         Backup files with '.bak' suffix will be created in the same directory.
         By default shutil.move() is used to create the backup file, which will
@@ -32,7 +32,7 @@ class SafeFile:
         very efficient.
         But, if you wish to append to the original file, you need to specify
         'copy=True' to use shutil.copy2().
-        '''
+        """
         pbak: str = cls.get_backup_path(path)
         if os.path.isfile(pbak):  # Restore before creating a new backup
             assert cls.restore(path), f"restore '{path}' failed"
@@ -46,7 +46,7 @@ class SafeFile:
 
     @classmethod
     def delete_backup(cls, path: str) -> bool:
-        '''Delete backup after writing file'''
+        """Delete backup after writing file"""
         pbak: str = cls.get_backup_path(path)
         if os.path.isfile(pbak):
             os.remove(pbak)
@@ -54,7 +54,7 @@ class SafeFile:
 
     @classmethod
     def restore(cls, path: str) -> bool:
-        '''Restore (if backup exists) before reading file'''
+        """Restore (if backup exists) before reading file"""
         pbak: str = cls.get_backup_path(path)
         if os.path.isfile(pbak):
             if os.path.isfile(path):

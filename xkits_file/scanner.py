@@ -20,7 +20,7 @@ THDNUM_DEFAULT = int(THDNUM_MAXIMUM / 2)
 
 
 class Scanner:
-    '''scan file objects'''
+    """scan file objects"""
 
     class Object:  # pylint: disable=too-many-public-methods
 
@@ -52,12 +52,12 @@ class Scanner:
 
         @property
         def uid(self) -> int:
-            '''user id of owner'''
+            """user id of owner"""
             return self.stat.st_uid
 
         @property
         def gid(self) -> int:
-            '''group id of owner'''
+            """group id of owner"""
             return self.stat.st_gid
 
         @property
@@ -70,12 +70,12 @@ class Scanner:
 
         @property
         def atime(self) -> float:
-            '''time of most recent access'''
+            """time of most recent access"""
             return self.stat.st_atime
 
         @property
         def mtime(self) -> float:
-            '''time of most recent content modification'''
+            """time of most recent content modification"""
             return self.stat.st_mtime
 
         @property
