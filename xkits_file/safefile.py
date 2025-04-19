@@ -3,11 +3,7 @@
 import os
 
 
-class SafeFile:
-    """Secure read and write files
-
-    Backup before writing and restore (if backup exists) before reading.
-    """
+class SafeKits:
 
     @classmethod
     def lock(cls, origin: str):

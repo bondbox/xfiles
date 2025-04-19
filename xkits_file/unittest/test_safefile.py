@@ -4,10 +4,10 @@ import os
 from tempfile import TemporaryDirectory
 import unittest
 
-from xkits_file.safefile import SafeFile
+from xkits_file.safefile import SafeKits
 
 
-class TestSafeFile(unittest.TestCase):
+class TestSafeKits(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -24,24 +24,24 @@ class TestSafeFile(unittest.TestCase):
         pass
 
     def test_lock(self):
-        with SafeFile.lock("test"):
+        with SafeKits.lock("test"):
             pass
 
     def test_backup_and_restore(self):
         with TemporaryDirectory() as thdl:
             path = os.path.join(thdl, "test")
-            self.assertTrue(SafeFile.create_backup(path))
+            self.assertTrue(SafeKits.create_backup(path))
             with open(path, "w") as whdl:
                 whdl.write(self.text)
-            self.assertTrue(SafeFile.create_backup(path, copy=True))
-            self.assertTrue(SafeFile.create_backup(path))
+            self.assertTrue(SafeKits.create_backup(path, copy=True))
+            self.assertTrue(SafeKits.create_backup(path))
             with open(path, "w") as whdl:
                 whdl.write("unittest")
-            self.assertTrue(SafeFile.restore(path))
+            self.assertTrue(SafeKits.restore(path))
             with open(path, "r") as rhdl:
                 self.assertEqual(rhdl.read(), self.text)
-            self.assertTrue(SafeFile.create_backup(path, copy=False))
-            self.assertTrue(SafeFile.delete_backup(path))
+            self.assertTrue(SafeKits.create_backup(path, copy=False))
+            self.assertTrue(SafeKits.delete_backup(path))
 
 
 if __name__ == "__main__":
