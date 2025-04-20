@@ -35,7 +35,7 @@ class TestSafeKits(unittest.TestCase):
             with open(path, "w") as whdl:
                 whdl.write(self.text)
             self.assertTrue(safefile.SafeKits.create_backup(path, copy=True))
-            self.assertTrue(safefile.SafeKits.create_backup(path, copy=False))
+            self.assertFalse(safefile.SafeKits.create_backup(path, copy=False))
             with open(path, "w") as whdl:
                 whdl.write("unittest")
             self.assertTrue(safefile.SafeKits.restore(path))

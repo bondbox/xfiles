@@ -36,10 +36,8 @@ class SafeKits:
         But, if you wish to append to the original file, you need to specify
         'copy=True' to use shutil.copy2().
         """
-        pbak: str = cls.get_backup_path(path)
-        if os.path.isfile(pbak):  # Restore before creating a new backup
-            assert cls.restore(path), f"restore '{path}' failed"
-        assert not os.path.exists(pbak), f"backup file '{pbak}' already exists"
+        if os.path.exists(pbak := cls.get_backup_path(path)):
+            return False
         if not os.path.exists(path):  # No need for backup
             return True
         assert os.path.isfile(path), f"'{path}' is not a regular file"
@@ -53,8 +51,7 @@ class SafeKits:
     @classmethod
     def delete_backup(cls, path: str) -> bool:
         """Delete backup after writing file"""
-        pbak: str = cls.get_backup_path(path)
-        if os.path.isfile(pbak):
+        if os.path.isfile(pbak := cls.get_backup_path(path)):
             os.remove(pbak)
         return not os.path.exists(pbak)
 
