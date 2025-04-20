@@ -141,3 +141,27 @@ class BaseFile():
     def sync(self):
         if self.__fhandler is not None and not self.readonly:
             os.fsync(self.__fhandler)
+
+
+class SafeFile(BaseFile):
+
+    def backup(self, copy: bool = False) -> None:
+        offset: int = self.fhandler.tell() if self.fhandler else -1
+
+        super().close()
+
+        if not SafeKits.create_backup(self.filepath, copy=copy):
+            raise Warning(f"failed to backup '{self.filepath}'")
+
+        if offset >= 0 and not (self.readonly and not copy):
+            self.open().seek(offset if copy else 0)
+
+    def restore(self) -> None:
+        reopen: bool = self.fhandler is not None
+        super().close()
+
+        if not SafeKits.restore(self.filepath):
+            raise Warning(f"failed to restore '{self.filepath}'")
+
+        if reopen:
+            self.open()

@@ -36,12 +36,19 @@ class TestSafeKits(unittest.TestCase):
                 whdl.write(self.text)
             self.assertTrue(safefile.SafeKits.create_backup(path, copy=True))
             self.assertFalse(safefile.SafeKits.create_backup(path, copy=False))
+            self.assertFalse(safefile.SafeKits.create_backup(path, copy=True))
             with open(path, "w") as whdl:
                 whdl.write("unittest")
+            self.assertTrue(safefile.SafeKits.restore(path))
+            self.assertTrue(safefile.SafeKits.restore(path))
             self.assertTrue(safefile.SafeKits.restore(path))
             with open(path, "r") as rhdl:
                 self.assertEqual(rhdl.read(), self.text)
             self.assertTrue(safefile.SafeKits.create_backup(path, copy=False))
+            self.assertFalse(safefile.SafeKits.create_backup(path, copy=True))
+            self.assertFalse(safefile.SafeKits.create_backup(path, copy=False))
+            self.assertTrue(safefile.SafeKits.delete_backup(path))
+            self.assertTrue(safefile.SafeKits.delete_backup(path))
             self.assertTrue(safefile.SafeKits.delete_backup(path))
 
 
@@ -124,6 +131,82 @@ class TestBaseFile(unittest.TestCase):
         self.assertRaises(TypeError, binary, bfile)
         self.assertRaises(TypeError, text, bfile)
         self.assertIsNone(bfile.fhandler)
+
+
+class TestSafeFile(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp = TemporaryDirectory()
+        cls.file = os.path.join(cls.temp.name, "test.txt")
+        cls.text = b"izun4drdy50si2xwu4zvmt90johbgewx"
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.temp.cleanup()
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_backup_and_restore(self):
+        sfile = safefile.SafeFile(self.file, readonly=False)
+        sfile.open()
+        sfile.binary.write(self.text)
+        sfile.sync()
+        sfile.backup(copy=False)
+        self.assertEqual(sfile.binary.read(), b"")
+        self.assertRaises(Warning, sfile.backup, copy=True)
+        self.assertRaises(Warning, sfile.backup, copy=False)
+        self.assertIsNone(sfile.fhandler)
+        sfile.open()
+        self.assertEqual(sfile.binary.read(), b"")
+        sfile.binary.write(b"test")
+        sfile.close()
+
+        sfile = safefile.SafeFile(self.file, readonly=True)
+        sfile.open()
+        self.assertEqual(sfile.binary.read(), b"test")
+        sfile.restore()
+        sfile.restore()
+        self.assertEqual(sfile.binary.read(), self.text)
+        sfile.close()
+
+        sfile = safefile.SafeFile(self.file, readonly=False)
+        sfile.open()
+        sfile.binary.write(b"test")
+        sfile.sync()
+        sfile.close()
+
+        sfile = safefile.SafeFile(self.file, readonly=True)
+        sfile.open()
+        self.assertEqual(sfile.binary.read(), self.text + b"test")
+        sfile.backup(copy=True)
+        self.assertEqual(sfile.binary.read(), b"")
+        sfile.binary.seek(0)
+        self.assertEqual(sfile.binary.read(), self.text + b"test")
+        self.assertRaises(Warning, sfile.backup, copy=False)
+        self.assertIsNone(sfile.fhandler)
+        self.assertRaises(Warning, sfile.backup, copy=True)
+        self.assertIsNone(sfile.fhandler)
+        self.assertEqual(sfile.open().read(), self.text + b"test")
+        sfile.restore()
+        self.assertEqual(sfile.binary.read(), self.text + b"test")
+        sfile.restore()
+        self.assertEqual(sfile.binary.read(), self.text + b"test")
+        sfile.backup(copy=False)
+        self.assertIsNone(sfile.fhandler)
+        self.assertRaises(FileNotFoundError, sfile.open)
+        self.assertRaises(Warning, sfile.backup, copy=True)
+        self.assertRaises(Warning, sfile.backup, copy=False)
+
+    def test_restore_failure(self):
+        with mock.patch.object(safefile.SafeKits, "restore") as mock_restore:
+            mock_restore.return_value = False
+            sfile = safefile.SafeFile(self.file, readonly=False)
+            self.assertRaises(Warning, sfile.restore)
 
 
 if __name__ == "__main__":
