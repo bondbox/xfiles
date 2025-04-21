@@ -25,12 +25,13 @@ class TestSafeKits(unittest.TestCase):
         pass
 
     def test_lock(self):
-        with safefile.SafeKits.lock("test"):
-            pass
+        with TemporaryDirectory() as temp:
+            with safefile.SafeKits.lock(os.path.join(temp, "test")):
+                pass
 
     def test_backup_and_restore(self):
-        with TemporaryDirectory() as thdl:
-            path = os.path.join(thdl, "test")
+        with TemporaryDirectory() as temp:
+            path = os.path.join(temp, "test")
             self.assertTrue(safefile.SafeKits.create_backup(path, copy=False))
             with open(path, "w") as whdl:
                 whdl.write(self.text)
