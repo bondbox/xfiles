@@ -74,7 +74,7 @@ class Downloader:
         """
         if exists(self.path):
             if not isfile(self.path):
-                Logger.stderr_red(f"Path '{self.path}' is not a file")
+                Logger.stdout_red(f"Path '{self.path}' is not a file")
                 return False
             raise FileExistsError(f"File '{self.path}' already exists")
 
@@ -119,14 +119,14 @@ class Downloader:
                 with get(self.url, timeout=self.timeout, stream=True) as response:  # noqa:E501
                     response.raise_for_status()  # HTTPError
                     with open(self.temp, "wb") as whdl:
-                        Logger.stdout(f"Download '{self.url}' to '{self.path}' started")  # noqa:E501
+                        Logger.stdout_yellow(f"Download '{self.url}' to '{self.path}' started")  # noqa:E501
                         for chunk in response.iter_content(chunk_size=self.chunk_size):  # noqa:E501
                             if not chunk:
                                 raise ValueError("Empty chunk received")  # noqa:E501, pragma: no cover
                             whdl.write(chunk)
                         fsync(whdl)
             except (ConnectionError, HTTPError) as e:
-                Logger.stderr_red(f"Failed to download '{self.url}' to '{self.path}': {e}")  # noqa:E501
+                Logger.stdout_red(f"Failed to download '{self.url}' to '{self.path}': {e}")  # noqa:E501
                 self.cleanup()
                 return False
 

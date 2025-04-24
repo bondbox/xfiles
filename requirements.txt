@@ -1,3 +1,3 @@
-xkits-logger>=0.1
+xkits-logger>=0.2
 xkits-lib>=0.3
 filelock
