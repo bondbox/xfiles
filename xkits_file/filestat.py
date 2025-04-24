@@ -1,11 +1,6 @@
 # coding=utf-8
 
-from grp import getgrgid
-from grp import getgrnam
 import os
-from pwd import getpwnam
-from pwd import getpwuid
-import stat
 from typing import Union
 
 
@@ -51,6 +46,7 @@ class FileStat:
     def username(self) -> str:
         """file owner"""
         try:
+            from pwd import getpwuid  # pylint:disable=import-outside-toplevel
             return getpwuid(self.uid).pw_name
         except KeyError:  # pragma: no cover
             return str(self.uid)  # pragma: no cover
@@ -58,12 +54,14 @@ class FileStat:
     @username.setter
     def username(self, owner: Union[int, str]):
         """change file owner"""
+        from pwd import getpwnam  # pylint:disable=import-outside-toplevel
         self.uid = getpwnam(owner).pw_uid if isinstance(owner, str) else owner
 
     @property
     def groupname(self) -> str:
         """file group"""
         try:
+            from grp import getgrgid  # pylint:disable=import-outside-toplevel
             return getgrgid(self.gid).gr_name
         except KeyError:  # pragma: no cover
             return str(self.gid)  # pragma: no cover
@@ -71,6 +69,7 @@ class FileStat:
     @groupname.setter
     def groupname(self, group: Union[int, str]):
         """change file group"""
+        from grp import getgrnam  # pylint:disable=import-outside-toplevel
         self.gid = getgrnam(group).gr_gid if isinstance(group, str) else group
 
     def chown(self, owner: Union[int, str], group: Union[int, str] = -1):
@@ -148,6 +147,7 @@ class FileStat:
             ┃ ┗━━━━━━━━━ Owner  ━┛
             ┗━━━━━━━━━━━ File type
         """
+        import stat  # pylint:disable=import-outside-toplevel
         return stat.filemode(self.stat.st_mode)
 
     @property
