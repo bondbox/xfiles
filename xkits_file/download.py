@@ -103,6 +103,7 @@ class Downloader:
 
         if move(src=temp, dst=self.path) != self.path:
             raise Warning(f"Cannot move '{temp}' to '{self.path}")  # noqa:E501, pragma: no cover
+        Logger.stdout_green(f"Download '{self.url}' to '{self.path}' completed")  # noqa:E501
 
         return exists(self.path) and isfile(self.path)
 
@@ -118,7 +119,7 @@ class Downloader:
                 with get(self.url, timeout=self.timeout, stream=True) as response:  # noqa:E501
                     response.raise_for_status()  # HTTPError
                     with open(self.temp, "wb") as whdl:
-                        Logger.stdout(f"Downloading '{self.url}' to '{self.path}'")  # noqa:E501
+                        Logger.stdout(f"Download '{self.url}' to '{self.path}' started")  # noqa:E501
                         for chunk in response.iter_content(chunk_size=self.chunk_size):  # noqa:E501
                             if not chunk:
                                 raise ValueError("Empty chunk received")  # noqa:E501, pragma: no cover
