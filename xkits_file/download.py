@@ -34,7 +34,7 @@ class Downloader:
 
             return path
 
-        self.__chunk_size: int = max(min(4096, chunk_size), 52428800)
+        self.__chunk_size: int = min(max(4096, chunk_size), 52428800)
         self.__timeout: float = float(timeout)
         self.__path: str = parse(url, path)
         self.__url: str = url

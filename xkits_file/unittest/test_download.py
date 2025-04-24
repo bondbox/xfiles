@@ -30,6 +30,10 @@ class TestDownloader(unittest.TestCase):
         with TemporaryDirectory() as temp:
             self.assertIsInstance(download.Downloader(self.url, temp).stat, download.FileStat)  # noqa:E501
 
+    def test_chunk_size(self):
+        with TemporaryDirectory() as temp:
+            self.assertEqual(download.Downloader(self.url, temp).chunk_size, 1048576)  # noqa:E501
+
     def test_prepare(self):
         with TemporaryDirectory() as temp:
             downloader = download.Downloader(self.url, temp)
