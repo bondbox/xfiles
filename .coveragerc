@@ -2,6 +2,8 @@
 omit =
     xkits_file/unittest/*
     xkits_file/attribute.py
+    xkits_fileviewer/unittest/*
+    xkits_fileviewer/attribute.py
 
 [report]
 exclude_lines =

@@ -45,7 +45,10 @@ setup(
     project_urls={"Source Code": __urlcode__,
                   "Bug Tracker": __urlbugs__,
                   "Documentation": __urldocs__},
-    packages=find_packages(include=["xkits_file*"], exclude=["xkits_file.unittest"]),  # noqa:E501
+    packages=find_packages(
+        include=["xkits_file*", "xkits_fileviewer*"],
+        exclude=["xkits_file.unittest", "xkits_fileviewer.unittest"]
+    ),
     install_requires=all_requirements(),
     cmdclass={
         "install": CustomInstallCommand,
