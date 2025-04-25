@@ -114,7 +114,7 @@ class TestLineFile(unittest.TestCase):
                 meta = LineFile.Metadata.new(order=(next := cursor.next(b"demo2")).serial, bytes=5)  # noqa:E501
                 line.binary.write(bytes(meta))
                 line.binary.write(next.content)
-                meta.order = 123
+                meta.order = 1
                 line.binary.write(bytes(meta))
                 self.assertEqual(cursor.serial, 1)
                 self.assertEqual(cursor.offset, 0)
@@ -197,6 +197,47 @@ class TestLineFile(unittest.TestCase):
                 self.assertEqual(line.binary.tell(), 58)
                 self.assertEqual(line.binary.seek(0, 2), 58)
                 self.assertEqual(line.binary.tell(), 58)
+
+    def test_generator(self):
+        with TemporaryDirectory() as temp:
+            with LineFile(join(temp, "test"), readonly=False) as line:
+                self.assertIsInstance(line, LineFile)
+                self.assertIsInstance(line.dump(b"demo1"), LineFile.Cursor)
+                self.assertIsInstance(line.dump(b"demo2"), LineFile.Cursor)
+                self.assertIsInstance(line.dump(b"demo3"), LineFile.Cursor)
+                self.assertIsInstance(line.dump(b"demo4"), LineFile.Cursor)
+                self.assertIsInstance(line.dump(b"demo5"), LineFile.Cursor)
+                self.assertEqual(len(line), 5)
+
+                for cursor in line.forward():
+                    self.assertIsInstance(cursor, LineFile.Cursor)
+                    self.assertEqual(cursor.content, f"demo{cursor.serial}".encode())  # noqa:E501
+                    self.assertEqual(cursor.length, 5)
+
+                for cursor in line.forward():
+                    self.assertIsInstance(cursor, LineFile.Cursor)
+                    self.assertEqual(cursor.content, f"demo{cursor.serial}".encode())  # noqa:E501
+                    self.assertEqual(cursor.length, 5)
+
+                for cursor in line.backward():
+                    self.assertIsInstance(cursor, LineFile.Cursor)
+                    self.assertEqual(cursor.content, f"demo{cursor.serial}".encode())  # noqa:E501
+                    self.assertEqual(cursor.length, 5)
+
+                for cursor in line.backward():
+                    self.assertIsInstance(cursor, LineFile.Cursor)
+                    self.assertEqual(cursor.content, f"demo{cursor.serial}".encode())  # noqa:E501
+                    self.assertEqual(cursor.length, 5)
+
+                for cursor in line:
+                    self.assertIsInstance(cursor, LineFile.Cursor)
+                    self.assertEqual(cursor.content, f"demo{cursor.serial}".encode())  # noqa:E501
+                    self.assertEqual(cursor.length, 5)
+
+                for cursor in line:
+                    self.assertIsInstance(cursor, LineFile.Cursor)
+                    self.assertEqual(cursor.content, f"demo{cursor.serial}".encode())  # noqa:E501
+                    self.assertEqual(cursor.length, 5)
 
 
 if __name__ == "__main__":

@@ -5,7 +5,10 @@ from ctypes import addressof  # noqa:H306
 from ctypes import c_uint8
 from ctypes import c_uint32  # noqa:H306
 from ctypes import memmove
+from typing import Any
 from typing import BinaryIO
+from typing import Generator
+from typing import Iterator
 
 from xkits_file.safefile import BaseFile
 
@@ -165,23 +168,67 @@ class LineFile(BaseFile):
         assert super().open() is self.binary, "open failed"
         self.__cursor: LineFile.Cursor = self.check()
 
+    def __len__(self) -> int:
+        return self.__cursor.serial
+
+    def __iter__(self) -> Iterator[Cursor]:
+        """Default iterator is backward generator"""
+        return self.backward()
+
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         super().close()
 
-    def __read(self, fd: BinaryIO, sn: int) -> Cursor:
-        offset: int = fd.tell()
+    def __read_next(self, current: Cursor) -> Cursor:
+        serial: int = current.serial + 1
+        offset: int = current.next_head_offset
+        assert current.handle.seek(offset, 0) == offset
 
-        head = self.Metadata.parse(fd.read(LineFile.Metadata.SINGLE))
-        data: bytes = fd.read(head.bytes)
-        tail = self.Metadata.parse(fd.read(LineFile.Metadata.SINGLE))
-        if head != tail or head.order != sn:
-            raise ValueError(f"sn: {sn}, {head} != {tail}")
+        head = self.Metadata.parse(current.handle.read(LineFile.Metadata.SINGLE))  # noqa:E501
+        data: bytes = current.handle.read(head.bytes)
+        tail = self.Metadata.parse(current.handle.read(LineFile.Metadata.SINGLE))  # noqa:E501
+        if head != tail or head.order != serial:
+            raise ValueError(f"serial: {serial}, {head} != {tail}")
 
-        assert (endpos := fd.tell()) == offset + len(data) + LineFile.Metadata.DOUBLE, f"endpos({endpos}) error"  # noqa:E501
-        return self.Cursor(fd, sn, offset, data)
+        assert (endpos := current.handle.tell()) == offset + len(data) + LineFile.Metadata.DOUBLE, f"endpos({endpos}) error"  # noqa:E501
+        return self.Cursor(current.handle, serial, offset, data)
+
+    def __read_prev(self, current: Cursor) -> Cursor:
+        if (serial := current.serial - 1) < 1:
+            raise StopIteration("This is already the first line")  # noqa:E501, pragma: no cover
+
+        endpos: int = current.offset
+        offset: int = current.prev_tail_offset
+        assert current.handle.seek(offset, 0) == offset
+        tail = self.Metadata.parse(current.handle.read(LineFile.Metadata.SINGLE))  # noqa:E501
+
+        offset -= LineFile.Metadata.SINGLE + tail.bytes
+        assert current.handle.seek(offset, 0) == offset
+        head = self.Metadata.parse(current.handle.read(LineFile.Metadata.SINGLE))  # noqa:E501
+        data = current.handle.read(tail.bytes)
+        assert current.handle.seek(LineFile.Metadata.SINGLE, 1) == endpos
+
+        if head != tail or head.order != serial:
+            raise ValueError(f"serial: {serial}, {head} != {tail}")
+        return current.prev(data)
+
+    def forward(self) -> Generator[Cursor, Any, None]:
+        """Generate all lines in the file"""
+        cursor = self.Cursor.begin(self.__cursor.handle)
+        while cursor.next_head_offset < cursor.handle.tell():
+            cursor = self.__read_next(cursor)
+            yield cursor
+
+    def backward(self) -> Generator[Cursor, Any, None]:
+        """Generate all lines in the file in reverse order"""
+        cursor = self.__cursor
+        while cursor.serial > 0:
+            yield cursor
+            if cursor.serial == 1:
+                break
+            cursor = self.__read_prev(cursor)
 
     def fast_check(self) -> Cursor:
         fhdl: BinaryIO = self.binary
@@ -194,21 +241,20 @@ class LineFile(BaseFile):
                 raise BufferError("seek overflow")  # pragma: no cover
 
             tail = self.Metadata.parse(fhdl.read(LineFile.Metadata.SINGLE))
-            if endpos < (length := tail.bytes + LineFile.Metadata.DOUBLE) or fhdl.seek(-length, 1) != endpos - length:  # noqa:E501
-                raise Warning(f"{endpos} < {length + LineFile.Metadata.DOUBLE}")  # noqa:E501, pragma: no cover
+            cursor = self.Cursor(fhdl, tail.order + 1, endpos, b"c")
 
-            if (cursor := self.__read(fhdl, tail.order)).next_head_offset != endpos:  # noqa:E501
+            if (cursor := self.__read_prev(cursor)).next_head_offset != endpos:  # noqa:E501
                 raise Warning("unexpected end of file")  # pragma: no cover
             return cursor
         except (ValueError, BufferError, Warning):
             return self.Cursor.begin(fhdl)
 
     def full_check(self) -> Cursor:
-        (cursor := self.Cursor.begin(fhdl := self.binary)).handle.seek(0, 0)
+        cursor: LineFile.Cursor = self.Cursor.begin(fhdl := self.binary)
 
         try:
             while True:
-                cursor = self.__read(fhdl, cursor.serial + 1)
+                cursor = self.__read_next(cursor)
         except (ValueError, BufferError):
             assert fhdl.seek(endpos := cursor.next_head_offset, 0) == endpos, "seek failed"  # noqa:E501
             if not self.readonly:
