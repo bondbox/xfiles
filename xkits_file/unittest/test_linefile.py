@@ -38,43 +38,49 @@ class TestLineFile(unittest.TestCase):
         self.assertEqual(str(meta), "Metadata(order=1, bytes=1)")
 
     def test_cursor(self):
-        self.assertIsInstance((cursor := LineFile.Cursor(1, 0, b"t")), LineFile.Cursor)  # noqa:E501
-        self.assertRaises(ValueError, LineFile.Cursor, 1, -1, b"t")
-        self.assertRaises(ValueError, LineFile.Cursor, 1, 1, b"t")
-        self.assertRaises(ValueError, LineFile.Cursor, 0, 0, b"t")
-        self.assertRaises(ValueError, LineFile.Cursor, 1, 0, b"")
-        self.assertEqual(str(cursor), "Cursor(serial=1, offset=0, length=1)")
-        self.assertEqual(cursor.serial, 1)
-        self.assertEqual(cursor.offset, 0)
-        self.assertEqual(cursor.length, 1)
+        with TemporaryDirectory() as temp:
+            with open(join(temp, "test"), "wb") as whdl:
+                self.assertIsInstance((cursor := LineFile.Cursor(whdl, 1, 0, b"t")), LineFile.Cursor)  # noqa:E501
+                self.assertRaises(ValueError, LineFile.Cursor, whdl, 1, -1, b"t")  # noqa:E501
+                self.assertRaises(ValueError, LineFile.Cursor, whdl, 1, 1, b"t")  # noqa:E501
+                self.assertRaises(ValueError, LineFile.Cursor, whdl, 0, 0, b"t")  # noqa:E501
+                self.assertRaises(ValueError, LineFile.Cursor, whdl, 1, 0, b"")  # noqa:E501
+                self.assertEqual(str(cursor), "Cursor(serial=1, offset=0, length=1)")  # noqa:E501
+                self.assertEqual(cursor.serial, 1)
+                self.assertEqual(cursor.offset, 0)
+                self.assertEqual(cursor.length, 1)
 
     def test_cursor_prev(self):
-        self.assertIsInstance((cursor2 := LineFile.Cursor(2, 25, b"t")), LineFile.Cursor)  # noqa:E501
-        self.assertIsInstance((cursor1 := cursor2.prev(b"d")), LineFile.Cursor)
-        self.assertRaises(StopIteration, cursor1.prev, b"s")
-        self.assertRaises(ValueError, cursor2.prev, b"ut")
-        self.assertEqual(cursor2.prev_tail_offset, 13)
-        self.assertEqual(cursor1.serial, 1)
-        self.assertEqual(cursor1.offset, 0)
-        self.assertEqual(cursor1.length, 1)
+        with TemporaryDirectory() as temp:
+            with open(join(temp, "test"), "wb") as whdl:
+                self.assertIsInstance((cursor2 := LineFile.Cursor(whdl, 2, 25, b"t")), LineFile.Cursor)  # noqa:E501
+                self.assertIsInstance((cursor1 := cursor2.prev(b"d")), LineFile.Cursor)  # noqa:E501
+                self.assertRaises(StopIteration, cursor1.prev, b"s")
+                self.assertRaises(ValueError, cursor2.prev, b"ut")
+                self.assertEqual(cursor2.prev_tail_offset, 13)
+                self.assertEqual(cursor1.serial, 1)
+                self.assertEqual(cursor1.offset, 0)
+                self.assertEqual(cursor1.length, 1)
 
     def test_cursor_begin(self):
         def prev(cursor: LineFile.Cursor) -> int:
             return cursor.prev_tail_offset
 
-        self.assertIsInstance((cursor := LineFile.Cursor.begin()), LineFile.Cursor)  # noqa:E501
-        self.assertEqual(str(cursor), "Cursor(serial=0, offset=0, length=0)")
-        self.assertIsInstance((next := cursor.next(b"ut")), LineFile.Cursor)
-        self.assertRaises(StopIteration, cursor.prev, 3)
-        self.assertRaises(StopIteration, prev, cursor)
-        self.assertEqual(cursor.serial, 0)
-        self.assertEqual(cursor.offset, 0)
-        self.assertEqual(cursor.length, 0)
-        self.assertEqual(next.serial, 1)
-        self.assertEqual(next.offset, 0)
-        self.assertEqual(next.length, 2)
-        self.assertFalse(cursor)
-        self.assertTrue(next)
+        with TemporaryDirectory() as temp:
+            with open(join(temp, "test"), "wb") as whdl:
+                self.assertIsInstance((cursor := LineFile.Cursor.begin(whdl)), LineFile.Cursor)  # noqa:E501
+                self.assertEqual(str(cursor), "Cursor(serial=0, offset=0, length=0)")  # noqa:E501
+                self.assertIsInstance((next := cursor.next(b"ut")), LineFile.Cursor)  # noqa:E501
+                self.assertRaises(StopIteration, cursor.prev, b"test")
+                self.assertRaises(StopIteration, prev, cursor)
+                self.assertEqual(cursor.serial, 0)
+                self.assertEqual(cursor.offset, 0)
+                self.assertEqual(cursor.length, 0)
+                self.assertEqual(next.serial, 1)
+                self.assertEqual(next.offset, 0)
+                self.assertEqual(next.length, 2)
+                self.assertFalse(cursor)
+                self.assertTrue(next)
 
     def test_create(self):
         with TemporaryDirectory() as temp:

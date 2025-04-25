@@ -86,10 +86,11 @@ class LineFile(BaseFile):
             length(int): the length of data in the line
         """
 
-        def __init__(self, serial: int, offset: int, content: bytes):
+        def __init__(self, handle: BinaryIO, serial: int, offset: int, content: bytes):  # noqa:E501
             length: int = len(content)
             if not (serial == 0 and offset == 0 and content == b""):
                 self.check(serial, offset, length)
+            self.__handle: BinaryIO = handle
             self.__serial: int = serial
             self.__offset: int = offset
             self.__length: int = length
@@ -100,6 +101,10 @@ class LineFile(BaseFile):
 
         def __bool__(self):
             return self.serial > 0
+
+        @property
+        def handle(self) -> BinaryIO:
+            return self.__handle
 
         @property
         def serial(self) -> int:
@@ -135,10 +140,10 @@ class LineFile(BaseFile):
                 raise StopIteration("This is already the first line")
 
             offset: int = self.offset - len(content) - LineFile.Metadata.DOUBLE  # noqa:E501
-            return LineFile.Cursor(serial, offset, content)
+            return LineFile.Cursor(self.handle, serial, offset, content)
 
         def next(self, content: bytes):
-            return LineFile.Cursor(self.serial + 1, self.next_head_offset, content)  # noqa:E501
+            return LineFile.Cursor(self.handle, self.serial + 1, self.next_head_offset, content)  # noqa:E501
 
         @classmethod
         def check(cls, serial: int, offset: int, length: int):
@@ -152,14 +157,13 @@ class LineFile(BaseFile):
                 raise ValueError(f"Invalid offset: {offset} (serial {serial})")
 
         @classmethod
-        def begin(cls):
-            return cls(0, 0, b"")
+        def begin(cls, handle: BinaryIO):
+            return cls(handle=handle, serial=0, offset=0, content=b"")
 
     def __init__(self, filepath: str, readonly: bool = True) -> None:
-        self.__cursor: LineFile.Cursor = LineFile.Cursor.begin()
         super().__init__(filepath=filepath, readonly=readonly)
         assert super().open() is self.binary, "open failed"
-        self.__cursor = self.check()
+        self.__cursor: LineFile.Cursor = self.check()
 
     def __enter__(self):
         return self
@@ -167,7 +171,7 @@ class LineFile(BaseFile):
     def __exit__(self, exc_type, exc_val, exc_tb):
         super().close()
 
-    def __check_line(self, fd: BinaryIO, sn: int) -> Cursor:
+    def __read(self, fd: BinaryIO, sn: int) -> Cursor:
         offset: int = fd.tell()
 
         head = self.Metadata.parse(fd.read(LineFile.Metadata.SINGLE))
@@ -177,7 +181,7 @@ class LineFile(BaseFile):
             raise ValueError(f"sn: {sn}, {head} != {tail}")
 
         assert (endpos := fd.tell()) == offset + len(data) + LineFile.Metadata.DOUBLE, f"endpos({endpos}) error"  # noqa:E501
-        return self.Cursor(sn, offset, data)
+        return self.Cursor(fd, sn, offset, data)
 
     def fast_check(self) -> Cursor:
         fhdl: BinaryIO = self.binary
@@ -193,20 +197,18 @@ class LineFile(BaseFile):
             if endpos < (length := tail.bytes + LineFile.Metadata.DOUBLE) or fhdl.seek(-length, 1) != endpos - length:  # noqa:E501
                 raise Warning(f"{endpos} < {length + LineFile.Metadata.DOUBLE}")  # noqa:E501, pragma: no cover
 
-            if (cursor := self.__check_line(fhdl, tail.order)).next_head_offset != endpos:  # noqa:E501
+            if (cursor := self.__read(fhdl, tail.order)).next_head_offset != endpos:  # noqa:E501
                 raise Warning("unexpected end of file")  # pragma: no cover
             return cursor
         except (ValueError, BufferError, Warning):
-            return self.Cursor.begin()
+            return self.Cursor.begin(fhdl)
 
     def full_check(self) -> Cursor:
-        cursor: LineFile.Cursor = self.Cursor.begin()
-        fhdl: BinaryIO = self.binary
-        fhdl.seek(0, 0)
+        (cursor := self.Cursor.begin(fhdl := self.binary)).handle.seek(0, 0)
 
         try:
             while True:
-                cursor = self.__check_line(fhdl, cursor.serial + 1)
+                cursor = self.__read(fhdl, cursor.serial + 1)
         except (ValueError, BufferError):
             assert fhdl.seek(endpos := cursor.next_head_offset, 0) == endpos, "seek failed"  # noqa:E501
             if not self.readonly:
@@ -219,13 +221,12 @@ class LineFile(BaseFile):
 
     def dump(self, datas: bytes) -> Cursor:
         if not self.readonly and len(datas) > 0:
-            fhdl: BinaryIO = self.binary
-            next = self.__cursor.next(datas)  # pylint: disable=W0622
-            if fhdl.tell() != next.offset or fhdl.seek(next.offset, 0) != next.offset:  # noqa:E501
-                raise Warning(f"file position {fhdl.tell()} != {next.offset}")  # noqa:E501, pragma: no cover
-            meta = self.Metadata.new(order=next.serial, bytes=next.length)
-            assert fhdl.write(bytes(meta)) == LineFile.Metadata.SINGLE
-            assert fhdl.write(next.content) == next.length, "write data error"
-            assert fhdl.write(bytes(meta)) == LineFile.Metadata.SINGLE
-            self.__cursor = next
+            cursor = self.__cursor.next(datas)
+            if cursor.handle.tell() != cursor.offset or cursor.handle.seek(cursor.offset, 0) != cursor.offset:  # noqa:E501
+                raise Warning(f"file position {cursor.handle.tell()} != {cursor.offset}")  # noqa:E501, pragma: no cover
+            meta = self.Metadata.new(order=cursor.serial, bytes=cursor.length)
+            assert cursor.handle.write(bytes(meta)) == LineFile.Metadata.SINGLE
+            assert cursor.handle.write(cursor.content) == cursor.length
+            assert cursor.handle.write(bytes(meta)) == LineFile.Metadata.SINGLE
+            self.__cursor = cursor
         return self.__cursor
