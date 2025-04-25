@@ -32,6 +32,16 @@ class TestDownloader(unittest.TestCase):
 
     def test_chunk_size(self):
         with TemporaryDirectory() as temp:
+            self.assertEqual(download.Downloader(self.url, temp, chunk_size=52428800).chunk_size, 8388608)  # noqa:E501
+            self.assertEqual(download.Downloader(self.url, temp, chunk_size=33554432).chunk_size, 8388608)  # noqa:E501
+            self.assertEqual(download.Downloader(self.url, temp, chunk_size=16777216).chunk_size, 8388608)  # noqa:E501
+            self.assertEqual(download.Downloader(self.url, temp, chunk_size=8388608).chunk_size, 8388608)  # noqa:E501
+            self.assertEqual(download.Downloader(self.url, temp, chunk_size=4194304).chunk_size, 4194304)  # noqa:E501
+            self.assertEqual(download.Downloader(self.url, temp, chunk_size=1048576).chunk_size, 1048576)  # noqa:E501
+            self.assertEqual(download.Downloader(self.url, temp, chunk_size=8192).chunk_size, 8192)  # noqa:E501
+            self.assertEqual(download.Downloader(self.url, temp, chunk_size=4096).chunk_size, 4096)  # noqa:E501
+            self.assertEqual(download.Downloader(self.url, temp, chunk_size=2048).chunk_size, 4096)  # noqa:E501
+            self.assertEqual(download.Downloader(self.url, temp, chunk_size=1024).chunk_size, 4096)  # noqa:E501
             self.assertEqual(download.Downloader(self.url, temp).chunk_size, 1048576)  # noqa:E501
 
     def test_prepare(self):
