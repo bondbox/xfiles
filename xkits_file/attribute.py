@@ -1,7 +1,7 @@
 # coding:utf-8
 
 __project__ = "xkits-file"
-__version__ = "0.3.1"
+__version__ = "0.4"
 __urlhome__ = "https://github.com/bondbox/xfiles/"
 __description__ = "File module"
 
