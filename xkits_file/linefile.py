@@ -181,6 +181,12 @@ class LineFile(BaseFile):
     def __exit__(self, exc_type, exc_val, exc_tb):
         super().close()
 
+    def __write(self, cursor: Cursor):
+        if cursor.handle.tell() != cursor.offset or cursor.handle.seek(cursor.offset, 0) != cursor.offset:  # noqa:E501
+            raise Warning(f"file position {cursor.handle.tell()} != {cursor.offset}")  # noqa:E501, pragma: no cover
+        meta = bytes(self.Metadata.new(order=cursor.serial, bytes=cursor.length))  # noqa:E501
+        assert cursor.handle.write(meta + cursor.content + meta) == cursor.length + LineFile.Metadata.DOUBLE  # noqa:E501
+
     def __read_next(self, current: Cursor) -> Cursor:
         serial: int = current.serial + 1
         offset: int = current.next_head_offset
@@ -267,12 +273,6 @@ class LineFile(BaseFile):
 
     def append(self, datas: bytes) -> Cursor:
         if not self.readonly and len(datas) > 0:
-            cursor = self.__cursor.next(datas)
-            if cursor.handle.tell() != cursor.offset or cursor.handle.seek(cursor.offset, 0) != cursor.offset:  # noqa:E501
-                raise Warning(f"file position {cursor.handle.tell()} != {cursor.offset}")  # noqa:E501, pragma: no cover
-            meta = self.Metadata.new(order=cursor.serial, bytes=cursor.length)
-            assert cursor.handle.write(bytes(meta)) == LineFile.Metadata.SINGLE
-            assert cursor.handle.write(cursor.content) == cursor.length
-            assert cursor.handle.write(bytes(meta)) == LineFile.Metadata.SINGLE
+            self.__write(cursor := self.__cursor.next(datas))
             self.__cursor = cursor
         return self.__cursor
