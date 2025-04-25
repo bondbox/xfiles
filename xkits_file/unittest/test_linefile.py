@@ -38,21 +38,21 @@ class TestLineFile(unittest.TestCase):
         self.assertEqual(str(meta), "Metadata(order=1, bytes=1)")
 
     def test_cursor(self):
-        self.assertIsInstance((cursor := LineFile.Cursor(1, 0, 1)), LineFile.Cursor)  # noqa:E501
-        self.assertRaises(ValueError, LineFile.Cursor, 1, -1, 1)
-        self.assertRaises(ValueError, LineFile.Cursor, 1, 1, 1)
-        self.assertRaises(ValueError, LineFile.Cursor, 1, 0, 0)
-        self.assertRaises(ValueError, LineFile.Cursor, 0, 0, 1)
+        self.assertIsInstance((cursor := LineFile.Cursor(1, 0, b"t")), LineFile.Cursor)  # noqa:E501
+        self.assertRaises(ValueError, LineFile.Cursor, 1, -1, b"t")
+        self.assertRaises(ValueError, LineFile.Cursor, 1, 1, b"t")
+        self.assertRaises(ValueError, LineFile.Cursor, 0, 0, b"t")
+        self.assertRaises(ValueError, LineFile.Cursor, 1, 0, b"")
         self.assertEqual(str(cursor), "Cursor(serial=1, offset=0, length=1)")
         self.assertEqual(cursor.serial, 1)
         self.assertEqual(cursor.offset, 0)
         self.assertEqual(cursor.length, 1)
 
     def test_cursor_prev(self):
-        self.assertIsInstance((cursor2 := LineFile.Cursor(2, 25, 1)), LineFile.Cursor)  # noqa:E501
-        self.assertIsInstance((cursor1 := cursor2.prev(1)), LineFile.Cursor)
-        self.assertRaises(StopIteration, cursor1.prev, 1)
-        self.assertRaises(ValueError, cursor2.prev, 2)
+        self.assertIsInstance((cursor2 := LineFile.Cursor(2, 25, b"t")), LineFile.Cursor)  # noqa:E501
+        self.assertIsInstance((cursor1 := cursor2.prev(b"d")), LineFile.Cursor)
+        self.assertRaises(StopIteration, cursor1.prev, b"s")
+        self.assertRaises(ValueError, cursor2.prev, b"ut")
         self.assertEqual(cursor2.prev_tail_offset, 13)
         self.assertEqual(cursor1.serial, 1)
         self.assertEqual(cursor1.offset, 0)
@@ -64,7 +64,7 @@ class TestLineFile(unittest.TestCase):
 
         self.assertIsInstance((cursor := LineFile.Cursor.begin()), LineFile.Cursor)  # noqa:E501
         self.assertEqual(str(cursor), "Cursor(serial=0, offset=0, length=0)")
-        self.assertIsInstance((next := cursor.next(2)), LineFile.Cursor)
+        self.assertIsInstance((next := cursor.next(b"ut")), LineFile.Cursor)
         self.assertRaises(StopIteration, cursor.prev, 3)
         self.assertRaises(StopIteration, prev, cursor)
         self.assertEqual(cursor.serial, 0)
@@ -105,9 +105,9 @@ class TestLineFile(unittest.TestCase):
             with LineFile(join(temp, "test"), readonly=False) as line:
                 self.assertIsInstance(line, LineFile)
                 self.assertIsInstance(cursor := line.dump(b"demo1"), LineFile.Cursor)  # noqa:E501
-                meta = LineFile.Metadata.new(order=(next := cursor.next(5)).serial, bytes=5)  # noqa:E501
+                meta = LineFile.Metadata.new(order=(next := cursor.next(b"demo2")).serial, bytes=5)  # noqa:E501
                 line.binary.write(bytes(meta))
-                line.binary.write(b"demo2")
+                line.binary.write(next.content)
                 meta.order = 123
                 line.binary.write(bytes(meta))
                 self.assertEqual(cursor.serial, 1)
