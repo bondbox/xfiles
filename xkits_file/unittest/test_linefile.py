@@ -86,12 +86,12 @@ class TestLineFile(unittest.TestCase):
         with TemporaryDirectory() as temp:
             self.assertRaises(FileNotFoundError, LineFile, join(temp, "test"))
 
-    def test_dump(self):
+    def test_append(self):
         with TemporaryDirectory() as temp:
             with LineFile(join(temp, "test"), readonly=False) as line:
                 self.assertIsInstance(line, LineFile)
                 self.assertIsInstance(cursor0 := line.fast_check(), LineFile.Cursor)  # noqa:E501
-                self.assertIsInstance(cursor1 := line.dump(b"demo"), LineFile.Cursor)  # noqa:E501
+                self.assertIsInstance(cursor1 := line.append(b"demo"), LineFile.Cursor)  # noqa:E501
                 self.assertEqual(cursor0.serial, 0)
                 self.assertEqual(cursor0.offset, 0)
                 self.assertEqual(cursor0.length, 0)
@@ -106,11 +106,11 @@ class TestLineFile(unittest.TestCase):
                 self.assertEqual(cursor.offset, 0)
                 self.assertEqual(cursor.length, 4)
 
-    def test_dump_error_serial(self):
+    def test_append_error_serial(self):
         with TemporaryDirectory() as temp:
             with LineFile(join(temp, "test"), readonly=False) as line:
                 self.assertIsInstance(line, LineFile)
-                self.assertIsInstance(cursor := line.dump(b"demo1"), LineFile.Cursor)  # noqa:E501
+                self.assertIsInstance(cursor := line.append(b"demo1"), LineFile.Cursor)  # noqa:E501
                 meta = LineFile.Metadata.new(order=(next := cursor.next(b"demo2")).serial, bytes=5)  # noqa:E501
                 line.binary.write(bytes(meta))
                 line.binary.write(next.content)
@@ -162,9 +162,9 @@ class TestLineFile(unittest.TestCase):
         with TemporaryDirectory() as temp:
             with LineFile(join(temp, "test"), readonly=False) as line:
                 self.assertIsInstance(line, LineFile)
-                self.assertIsInstance(cursor1 := line.dump(b"demo1"), LineFile.Cursor)  # noqa:E501
-                self.assertIsInstance(cursor2 := line.dump(b"demo2"), LineFile.Cursor)  # noqa:E501
-                self.assertIsInstance(cursor3 := line.dump(b"demo3"), LineFile.Cursor)  # noqa:E501
+                self.assertIsInstance(cursor1 := line.append(b"demo1"), LineFile.Cursor)  # noqa:E501
+                self.assertIsInstance(cursor2 := line.append(b"demo2"), LineFile.Cursor)  # noqa:E501
+                self.assertIsInstance(cursor3 := line.append(b"demo3"), LineFile.Cursor)  # noqa:E501
                 self.assertEqual(cursor1.serial, 1)
                 self.assertEqual(cursor1.offset, 0)
                 self.assertEqual(cursor1.length, 5)
@@ -202,11 +202,11 @@ class TestLineFile(unittest.TestCase):
         with TemporaryDirectory() as temp:
             with LineFile(join(temp, "test"), readonly=False) as line:
                 self.assertIsInstance(line, LineFile)
-                self.assertIsInstance(line.dump(b"demo1"), LineFile.Cursor)
-                self.assertIsInstance(line.dump(b"demo2"), LineFile.Cursor)
-                self.assertIsInstance(line.dump(b"demo3"), LineFile.Cursor)
-                self.assertIsInstance(line.dump(b"demo4"), LineFile.Cursor)
-                self.assertIsInstance(line.dump(b"demo5"), LineFile.Cursor)
+                self.assertIsInstance(line.append(b"demo1"), LineFile.Cursor)
+                self.assertIsInstance(line.append(b"demo2"), LineFile.Cursor)
+                self.assertIsInstance(line.append(b"demo3"), LineFile.Cursor)
+                self.assertIsInstance(line.append(b"demo4"), LineFile.Cursor)
+                self.assertIsInstance(line.append(b"demo5"), LineFile.Cursor)
                 self.assertEqual(len(line), 5)
 
                 for cursor in line.forward():

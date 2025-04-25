@@ -265,7 +265,7 @@ class LineFile(BaseFile):
     def check(self) -> Cursor:
         return self.fast_check() or self.full_check()
 
-    def dump(self, datas: bytes) -> Cursor:
+    def append(self, datas: bytes) -> Cursor:
         if not self.readonly and len(datas) > 0:
             cursor = self.__cursor.next(datas)
             if cursor.handle.tell() != cursor.offset or cursor.handle.seek(cursor.offset, 0) != cursor.offset:  # noqa:E501
