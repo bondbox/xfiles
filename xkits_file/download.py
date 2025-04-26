@@ -98,10 +98,7 @@ class Downloader:
         """Move temp file to final path and check when complete"""
         from shutil import move  # pylint: disable=import-outside-toplevel
 
-        if not exists(temp := self.temp) or not isfile(temp):
-            raise FileNotFoundError(f"Temp file '{temp}' is not found")
-
-        if move(src=temp, dst=self.path) != self.path:
+        if exists(temp := self.temp) and isfile(temp) and move(src=temp, dst=self.path) != self.path:  # noqa:E501
             raise Warning(f"Cannot move '{temp}' to '{self.path}")  # noqa:E501, pragma: no cover
         Logger.stdout_green(f"Download '{self.url}' to '{self.path}' completed")  # noqa:E501
 

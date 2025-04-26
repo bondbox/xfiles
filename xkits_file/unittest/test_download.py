@@ -59,7 +59,7 @@ class TestDownloader(unittest.TestCase):
 
     def test_complete(self):
         with TemporaryDirectory() as temp:
-            self.assertRaises(FileNotFoundError, download.Downloader(self.url, temp).complete)  # noqa:E501
+            self.assertFalse(download.Downloader(self.url, temp).complete())
 
     def test_start(self):
         with TemporaryDirectory() as temp:
