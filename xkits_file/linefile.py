@@ -223,7 +223,7 @@ class LineFile(BaseFile):
     def forward(self) -> Generator[Cursor, Any, None]:
         """Generate all lines in the file"""
         cursor = self.Cursor.begin(self.__cursor.handle)
-        while cursor.next_head_offset < cursor.handle.tell():
+        while cursor.next_head_offset <= self.__cursor.offset:
             cursor = self.__read_next(cursor)
             yield cursor
 
