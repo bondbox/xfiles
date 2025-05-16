@@ -134,6 +134,31 @@ class TestBaseFile(unittest.TestCase):
         self.assertIsNone(bfile.fhandler)
 
 
+class TestSafeReadWrite(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp = TemporaryDirectory()
+        cls.file = os.path.join(cls.temp.name, "test.txt")
+        cls.text = b"bitag5e3ebfbhnxz270c8y8i3s53ruz1"
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.temp.cleanup()
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_mock_open(self):
+        with safefile.SafeWrite(self.file) as fhdl:
+            self.assertEqual(fhdl.write(self.text), len(self.text))
+        with safefile.SafeRead(self.file) as fhdl:
+            self.assertEqual(fhdl.read(), self.text)
+
+
 class TestSafeFile(unittest.TestCase):
 
     @classmethod

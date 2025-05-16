@@ -158,6 +158,40 @@ class BaseFile():
             os.fsync(self.__fhandler)
 
 
+class SafeRead(BaseFile):
+
+    def __init__(self, filepath: str, encoding: Optional[str] = None) -> None:
+        super().__init__(filepath, readonly=True, encoding=encoding)
+
+    def open(self) -> IO[Any]:
+        if not SafeKits.restore(self.filepath):
+            raise RuntimeWarning(f"failed to restore: '{self.filepath}'")  # noqa:E501, pragma: no cover
+        return super().open()
+
+    def close(self) -> None:
+        super().close()
+        if not SafeKits.delete_backup(self.filepath):
+            raise RuntimeWarning(f"failed to delete backup: '{self.filepath}'")  # noqa:E501, pragma: no cover
+
+
+class SafeWrite(BaseFile):
+
+    def __init__(self, filepath: str, encoding: Optional[str] = None, truncate: bool = False) -> None:  # noqa:E501
+        super().__init__(filepath, readonly=False, encoding=encoding, truncate=truncate)  # noqa:E501
+
+    def open(self) -> IO[Any]:
+        if not SafeKits.restore(self.filepath):
+            raise RuntimeWarning(f"failed to restore: '{self.filepath}'")  # noqa:E501, pragma: no cover
+        if not SafeKits.create_backup(self.filepath, copy=not self.truncate):
+            raise RuntimeWarning(f"failed to backup: '{self.filepath}'")  # noqa:E501, pragma: no cover
+        return super().open()
+
+    def close(self) -> None:
+        super().close()
+        if not SafeKits.delete_backup(self.filepath):
+            raise RuntimeWarning(f"failed to delete backup: '{self.filepath}'")  # noqa:E501, pragma: no cover
+
+
 class SafeFile(BaseFile):
 
     def backup(self, copy: bool = False) -> None:
