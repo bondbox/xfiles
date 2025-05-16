@@ -73,10 +73,14 @@ class SafeKits:
 
 class BaseFile():
 
-    def __init__(self, filepath: str, readonly: bool = True, encoding: Optional[str] = None) -> None:  # noqa:E501
+    def __init__(self, filepath: str,
+                 readonly: bool = True,
+                 encoding: Optional[str] = None,
+                 truncate: bool = False) -> None:
         self.__fhandler: Optional[IO[Any]] = None
         self.__encoding: Optional[str] = encoding
         self.__readonly: bool = readonly
+        self.__truncate: bool = truncate
         self.__filepath: str = filepath
 
         if readonly and not os.path.exists(filepath):
@@ -109,6 +113,10 @@ class BaseFile():
         return self.__fhandler
 
     @property
+    def truncate(self) -> bool:
+        return not self.__readonly and self.__truncate
+
+    @property
     def binary(self) -> BinaryIO:
         if not self.__fhandler or not isinstance(self.__fhandler, BufferedReader if self.readonly else BufferedRandom):  # noqa:E501
             raise TypeError(f"file handler({type(self.__fhandler)}) is not a binary file")  # noqa:E501
@@ -125,7 +133,14 @@ class BaseFile():
             return "r" if self.encoding else "rb"
 
         def writable_mode() -> str:
-            return "a+" if self.encoding else "ab+"
+
+            def write_mode() -> str:
+                return "w+" if self.encoding else "wb+"
+
+            def append_mode() -> str:
+                return "a+" if self.encoding else "ab+"
+
+            return write_mode() if self.truncate else append_mode()
 
         if self.__fhandler is None:
             mode: str = readonly_mode() if self.readonly else writable_mode()

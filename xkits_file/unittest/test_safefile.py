@@ -94,7 +94,7 @@ class TestBaseFile(unittest.TestCase):
         def text(fhdl: safefile.BaseFile):
             return fhdl.text
 
-        bfile = safefile.BaseFile(self.file, readonly=False)
+        bfile = safefile.BaseFile(self.file, readonly=False, truncate=True)
         self.assertRaises(TypeError, binary, bfile)
         self.assertRaises(TypeError, text, bfile)
         self.assertIsNone(bfile.fhandler)
