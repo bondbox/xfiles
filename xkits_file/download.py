@@ -8,7 +8,7 @@ from os.path import isfile
 from os.path import join
 from typing import Optional
 
-from xkits_lib import TimeUnit
+from xkits_lib.unit import TimeUnit
 from xkits_logger import Logger
 
 from xkits_file.filestat import FileStat
