@@ -76,7 +76,7 @@ class TestScanner(unittest.TestCase):
         self.assertIs(self.scanner[object.path], object)
 
     def test_add_sym_object(self):
-        path = shutil.which("python")
+        path = shutil.which("sh")
         if path:
             object = Scanner.Object(path)
             self.scanner.add(object)
