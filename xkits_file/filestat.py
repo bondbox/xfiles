@@ -1,6 +1,9 @@
 # coding=utf-8
 
-import os
+from os import chmod
+from os import chown
+from os import stat
+from os import stat_result
 from pathlib import Path
 from typing import Union
 
@@ -19,9 +22,9 @@ class FileStat:
         return self.__path
 
     @property
-    def stat(self) -> os.stat_result:
+    def stat(self) -> stat_result:
         """file stat"""
-        return os.stat(self.path)
+        return stat(self.path)
 
     @property
     def uid(self) -> int:
@@ -31,7 +34,7 @@ class FileStat:
     @uid.setter
     def uid(self, uid: int):
         """change file uid"""
-        os.chown(self.path, uid, -1)
+        chown(self.path, uid, -1)
 
     @property
     def gid(self) -> int:
@@ -41,7 +44,7 @@ class FileStat:
     @gid.setter
     def gid(self, gid: int):
         """change file gid"""
-        os.chown(self.path, -1, gid)
+        chown(self.path, -1, gid)
 
     @property
     def username(self) -> str:
@@ -148,8 +151,8 @@ class FileStat:
             ┃ ┗━━━━━━━━━ Owner  ━┛
             ┗━━━━━━━━━━━ File type
         """
-        import stat  # pylint:disable=import-outside-toplevel
-        return stat.filemode(self.stat.st_mode)
+        from stat import filemode  # pylint:disable=import-outside-toplevel
+        return filemode(self.stat.st_mode)
 
     @property
     def human_file_type(self) -> str:
@@ -213,4 +216,4 @@ class FileStat:
         """change file mode bits"""
         if isinstance(mode, str):
             mode = int(mode, 8)
-        os.chmod(self.path, mode)
+        chmod(self.path, mode)

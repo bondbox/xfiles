@@ -3,7 +3,10 @@
 from io import BufferedRandom
 from io import BufferedReader
 from io import TextIOWrapper
-import os
+from os import fsync
+from os import remove
+from os.path import exists
+from os.path import isfile
 from pathlib import Path
 from typing import Any
 from typing import BinaryIO
@@ -38,39 +41,39 @@ class SafeKits:
         But, if you wish to append to the original file, you need to specify
         'copy=True' to use shutil.copy2().
         """
-        if os.path.exists(pbak := cls.get_backup_path(path)):
+        if exists(pbak := cls.get_backup_path(path)):
             return False
-        if not os.path.exists(path):  # No need for backup
+        if not exists(path):  # No need for backup
             return True
-        assert os.path.isfile(path), f"'{path}' is not a regular file"
+        assert isfile(path), f"'{path}' is not a regular file"
 
         import shutil  # pylint: disable=import-outside-toplevel
 
         method = shutil.copy2 if copy else shutil.move
         assert method(src=path, dst=pbak) == pbak, f"backup '{path}' failed"
-        return os.path.exists(pbak)
+        return exists(pbak)
 
     @classmethod
     def delete_backup(cls, path: Union[str, Path]) -> bool:
         """Delete backup after writing file"""
-        if os.path.isfile(pbak := cls.get_backup_path(path)):
-            os.remove(pbak)
-        return not os.path.exists(pbak)
+        if isfile(pbak := cls.get_backup_path(path)):
+            remove(pbak)
+        return not exists(pbak)
 
     @classmethod
     def restore(cls, path: Union[str, Path]) -> bool:
         """Restore (if backup exists) before reading file"""
         pbak: Path = cls.get_backup_path(path)
-        if os.path.isfile(pbak):
-            if os.path.isfile(path):
-                os.remove(path)
+        if isfile(pbak):
+            if isfile(path):
+                remove(path)
 
             import shutil  # pylint: disable=import-outside-toplevel
 
-            assert not os.path.exists(path), f"file '{path}' still exists"
+            assert not exists(path), f"file '{path}' still exists"
             assert shutil.move(src=pbak, dst=path) == path, \
                 f"restore backup file '{pbak}' to '{path}' failed"
-        return not os.path.exists(pbak)
+        return not exists(pbak)
 
 
 class BaseFile():
@@ -84,7 +87,7 @@ class BaseFile():
         self.__readonly: bool = readonly
         self.__truncate: bool = truncate
 
-        if readonly and not os.path.exists(filepath):
+        if readonly and not exists(filepath):
             # When the file is writable, create it if not exists
             raise FileNotFoundError(f"file '{filepath}' does not exist")
 
@@ -156,7 +159,7 @@ class BaseFile():
 
     def sync(self):
         if self.__fhandler is not None and not self.readonly:
-            os.fsync(self.__fhandler)
+            fsync(self.__fhandler)
 
 
 class SafeRead(BaseFile):

@@ -1,10 +1,24 @@
 # coding:utf-8
 
-import os
+from os import cpu_count
+from os import listdir
+from os import lstat
+from os import stat
+from os import stat_result
+from os.path import abspath
+from os.path import exists
+from os.path import isdir
+from os.path import islink
+from os.path import join
+from os.path import normpath
+from os.path import realpath
+from os.path import relpath
 from pathlib import Path
 from queue import Empty
 from queue import Queue
-import stat
+from stat import S_ISDIR
+from stat import S_ISLNK
+from stat import S_ISREG
 from threading import Thread
 from typing import Callable
 from typing import Dict
@@ -15,7 +29,7 @@ from typing import Set
 from typing import Tuple
 from typing import Union
 
-CPU_COUNT = os.cpu_count()
+CPU_COUNT = cpu_count()
 THDNUM_MINIMUM = 1
 THDNUM_MAXIMUM = CPU_COUNT if isinstance(CPU_COUNT, int) else 64
 THDNUM_DEFAULT = int(THDNUM_MAXIMUM / 2)
@@ -28,9 +42,9 @@ class Scanner:
 
         def __init__(self, path: Union[str, Path]):
             assert isinstance(path, (str, Path))
-            self.__path: Path = Path(os.path.normpath(path))
-            self.__abspath: Path = Path(os.path.abspath(self.__path))
-            self.__realpath: Path = Path(os.path.realpath(self.__abspath))
+            self.__path: Path = Path(normpath(path))
+            self.__abspath: Path = Path(abspath(self.__path))
+            self.__realpath: Path = Path(realpath(self.__abspath))
 
         @property
         def path(self) -> Path:
@@ -45,12 +59,12 @@ class Scanner:
             return self.__realpath
 
         @property
-        def stat(self) -> os.stat_result:
-            return os.stat(self.abspath)
+        def stat(self) -> stat_result:
+            return stat(self.abspath)
 
         @property
-        def lstat(self) -> os.stat_result:
-            return os.lstat(self.abspath)
+        def lstat(self) -> stat_result:
+            return lstat(self.abspath)
 
         @property
         def uid(self) -> int:
@@ -86,11 +100,11 @@ class Scanner:
 
         @property
         def isdir(self) -> bool:
-            return stat.S_ISDIR(self.stat.st_mode)
+            return S_ISDIR(self.stat.st_mode)
 
         @property
         def isreg(self) -> bool:
-            return stat.S_ISREG(self.stat.st_mode)
+            return S_ISREG(self.stat.st_mode)
 
         @property
         def isfile(self) -> bool:
@@ -98,7 +112,7 @@ class Scanner:
 
         @property
         def islink(self) -> bool:
-            return stat.S_ISLNK(self.lstat.st_mode)
+            return S_ISLNK(self.lstat.st_mode)
 
         @property
         def issym(self) -> bool:
@@ -171,7 +185,7 @@ class Scanner:
 
         def rpath(path: Union[str, Path]) -> Path:
             assert isinstance(path, (str, Path))
-            return Path(os.path.relpath(path))
+            return Path(relpath(path))
 
         # filter files and directorys
         def path_filter() -> Set[Path]:
@@ -205,16 +219,16 @@ class Scanner:
                 path = rpath(path)
                 assert isinstance(path, Path)
 
-                if path in scan_stat.filter or not os.path.exists(path):
+                if path in scan_stat.filter or not exists(path):
                     scan_stat.q_path.task_done()
                     continue
 
-                if os.path.isdir(path) and path not in scanned_dirs:
+                if isdir(path) and path not in scanned_dirs:
                     scanned_dirs.add(path)
                     # scan symbolic link dirs?
-                    if not os.path.islink(path) or linkdir:
-                        for sub in os.listdir(path=path):
-                            spath = os.path.join(path, sub)
+                    if not islink(path) or linkdir:
+                        for sub in listdir(path=path):
+                            spath = join(path, sub)
                             scan_stat.q_path.put(Path(spath))
 
                 ret = True
