@@ -1,6 +1,7 @@
 # coding:utf-8
 
 import os
+from pathlib import Path
 from queue import Empty
 from queue import Queue
 import stat
@@ -12,6 +13,7 @@ from typing import Optional
 from typing import Sequence
 from typing import Set
 from typing import Tuple
+from typing import Union
 
 CPU_COUNT = os.cpu_count()
 THDNUM_MINIMUM = 1
@@ -24,22 +26,22 @@ class Scanner:
 
     class Object:  # pylint: disable=too-many-public-methods
 
-        def __init__(self, path: str):
-            assert isinstance(path, str)
-            self.__path = os.path.normpath(path)
-            self.__abspath = os.path.abspath(self.__path)
-            self.__realpath = os.path.realpath(self.__abspath)
+        def __init__(self, path: Union[str, Path]):
+            assert isinstance(path, (str, Path))
+            self.__path: Path = Path(os.path.normpath(path))
+            self.__abspath: Path = Path(os.path.abspath(self.__path))
+            self.__realpath: Path = Path(os.path.realpath(self.__abspath))
 
         @property
-        def path(self) -> str:
+        def path(self) -> Path:
             return self.__path
 
         @property
-        def abspath(self) -> str:
+        def abspath(self) -> Path:
             return self.__abspath
 
         @property
-        def realpath(self) -> str:
+        def realpath(self) -> Path:
             return self.__realpath
 
         @property
@@ -114,7 +116,7 @@ class Scanner:
             return tuple(_hash.hexdigest() for _hash in args)
 
     def __init__(self):
-        self.__objdict: Dict[str, Scanner.Object] = {}
+        self.__objdict: Dict[Path, Scanner.Object] = {}
         self.__objects: Set[Scanner.Object] = set()
         self.__objsyms: Set[Scanner.Object] = set()
         self.__objregs: Set[Scanner.Object] = set()
@@ -123,8 +125,8 @@ class Scanner:
     def __iter__(self):
         return iter(self.__objects)
 
-    def __getitem__(self, key: str):
-        return self.__objdict[key]
+    def __getitem__(self, key: Union[str, Path]):
+        return self.__objdict[Path(key)]
 
     @property
     def dirs(self) -> Set[Object]:
@@ -167,13 +169,13 @@ class Scanner:
 
         thds = min(max(THDNUM_MINIMUM, threads), THDNUM_MAXIMUM)
 
-        def rpath(path: str) -> str:
-            assert isinstance(path, str)
-            return os.path.relpath(path)
+        def rpath(path: Union[str, Path]) -> Path:
+            assert isinstance(path, (str, Path))
+            return Path(os.path.relpath(path))
 
         # filter files and directorys
-        def path_filter() -> Set[str]:
-            filter_paths: Set[str] = set()
+        def path_filter() -> Set[Path]:
+            filter_paths: Set[Path] = set()
 
             for path in exclude:
                 filter_paths.add(rpath(path))
@@ -186,8 +188,8 @@ class Scanner:
                 self.exit = False
                 self.handler = handler
                 self.scanner = Scanner()
-                self.filter: Set[str] = path_filter()
-                self.q_path: "Queue[str]" = Queue()
+                self.filter: Set[Path] = path_filter()
+                self.q_path: "Queue[Path]" = Queue()
                 self.q_task: "Queue[Scanner.Object]" = Queue(maxsize=thds * 2)
 
         scan_stat = task_stat()
@@ -201,7 +203,7 @@ class Scanner:
                     continue
 
                 path = rpath(path)
-                assert isinstance(path, str)
+                assert isinstance(path, Path)
 
                 if path in scan_stat.filter or not os.path.exists(path):
                     scan_stat.q_path.task_done()
@@ -213,7 +215,7 @@ class Scanner:
                     if not os.path.islink(path) or linkdir:
                         for sub in os.listdir(path=path):
                             spath = os.path.join(path, sub)
-                            scan_stat.q_path.put(spath)
+                            scan_stat.q_path.put(Path(spath))
 
                 ret = True
                 obj = Scanner.Object(path)
@@ -247,7 +249,7 @@ class Scanner:
             thread.start()
 
         for path in paths:
-            scan_stat.q_path.put(path)
+            scan_stat.q_path.put(Path(path))
 
         scan_stat.q_path.join()
         scan_stat.q_task.join()

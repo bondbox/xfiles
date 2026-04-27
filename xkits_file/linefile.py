@@ -5,10 +5,12 @@ from ctypes import addressof  # noqa:H306
 from ctypes import c_uint8
 from ctypes import c_uint32  # noqa:H306
 from ctypes import memmove
+from pathlib import Path
 from typing import Any
 from typing import BinaryIO
 from typing import Generator
 from typing import Iterator
+from typing import Union
 
 from xkits_file.safefile import BaseFile
 
@@ -163,7 +165,7 @@ class LineFile(BaseFile):
         def begin(cls, handle: BinaryIO):
             return cls(handle=handle, serial=0, offset=0, content=b"")
 
-    def __init__(self, filepath: str, readonly: bool = True) -> None:
+    def __init__(self, filepath: Union[str, Path], readonly: bool = True) -> None:  # noqa:E501
         super().__init__(filepath=filepath, readonly=readonly)
         assert super().open() is self.binary, "open failed"
         self.__cursor: LineFile.Cursor = self.check()

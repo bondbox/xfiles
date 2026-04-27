@@ -3,6 +3,7 @@
 
 import hashlib
 import os
+from pathlib import Path
 import shutil
 import unittest
 
@@ -38,9 +39,9 @@ class TestScanner(unittest.TestCase):
     def test_iter(self):
         for object in self.scanner:
             self.assertIsInstance(object, Scanner.Object)
-            self.assertIsInstance(object.path, str)
-            self.assertIsInstance(object.abspath, str)
-            self.assertIsInstance(object.realpath, str)
+            self.assertIsInstance(object.path, Path)
+            self.assertIsInstance(object.abspath, Path)
+            self.assertIsInstance(object.realpath, Path)
             self.assertIsInstance(object.uid, int)
             self.assertIsInstance(object.gid, int)
             self.assertIsInstance(object.mode, int)

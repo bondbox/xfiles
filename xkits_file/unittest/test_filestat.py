@@ -2,6 +2,7 @@
 
 from grp import getgrgid
 import os
+from pathlib import Path
 from pwd import getpwuid
 from tempfile import TemporaryDirectory
 import unittest
@@ -32,7 +33,7 @@ class TestFileStat(unittest.TestCase):
         pass
 
     def test_check_file(self):
-        self.assertEqual(self.file.path, self.path)
+        self.assertEqual(self.file.path, Path(self.path))
         self.assertIsInstance(self.file.stat, os.stat_result)
         self.file.username = self.username
         self.file.groupname = self.groupname

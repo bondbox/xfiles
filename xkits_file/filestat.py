@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import os
+from pathlib import Path
 from typing import Union
 
 
@@ -10,11 +11,11 @@ class FileStat:
     Manage file owner, group and permissions.
     """
 
-    def __init__(self, path: str):
-        self.__path: str = path
+    def __init__(self, path: Union[str, Path]):
+        self.__path: Path = Path(path)
 
     @property
-    def path(self) -> str:
+    def path(self) -> Path:
         return self.__path
 
     @property

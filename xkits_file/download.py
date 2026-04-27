@@ -6,7 +6,9 @@ from os.path import exists
 from os.path import isdir
 from os.path import isfile
 from os.path import join
+from pathlib import Path
 from typing import Optional
+from typing import Union
 
 from xkits_lib.unit import TimeUnit
 from xkits_logger import Logger
@@ -23,20 +25,20 @@ class Downloader:
     space requirement.
     """
 
-    def __init__(self, url: str, path: Optional[str] = None,
+    def __init__(self, url: str, path: Optional[Union[str, Path]] = None,
                  timeout: TimeUnit = 180, chunk_size: int = 1048576):
-        def parse(url: str, path: Optional[str]) -> str:
+        def parse(url: str, path: Optional[Union[str, Path]]) -> Path:
             if not path:
-                return basename(url.rstrip("/"))
+                return Path(basename(url.rstrip("/")))
 
             if exists(path) and isdir(path):
-                return join(path, basename(url.rstrip("/")))
+                return Path(join(str(path), basename(url.rstrip("/"))))
 
-            return path
+            return Path(path)
 
         self.__chunk_size: int = min(max(4096, chunk_size), 8388608)  # 4K ~ 8M
         self.__timeout: float = float(timeout)
-        self.__path: str = parse(url, path)
+        self.__path: Path = parse(url, path)
         self.__url: str = url
 
     @property
@@ -44,12 +46,12 @@ class Downloader:
         return self.__url
 
     @property
-    def path(self) -> str:
+    def path(self) -> Path:
         return self.__path
 
     @property
-    def temp(self) -> str:
-        return f"{self.path}.tmp"
+    def temp(self) -> Path:
+        return Path(f"{self.path}.tmp")
 
     @property
     def stat(self) -> FileStat:

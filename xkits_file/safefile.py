@@ -4,29 +4,31 @@ from io import BufferedRandom
 from io import BufferedReader
 from io import TextIOWrapper
 import os
+from pathlib import Path
 from typing import Any
 from typing import BinaryIO
 from typing import IO
 from typing import Optional
 from typing import TextIO
+from typing import Union
 
 
 class SafeKits:
 
     @classmethod
-    def lock(cls, origin: str):
+    def lock(cls, origin: Union[str, Path]):
         """Unified file lock"""
         from filelock import FileLock  # pylint: disable=C0415
 
         return FileLock(f"{origin}.lock")
 
     @classmethod
-    def get_backup_path(cls, origin: str) -> str:
+    def get_backup_path(cls, origin: Union[str, Path]) -> Path:
         """Unified backup path"""
-        return f"{origin}.bak"
+        return Path(f"{origin}.bak")
 
     @classmethod
-    def create_backup(cls, path: str, copy: bool = False) -> bool:
+    def create_backup(cls, path: Union[str, Path], copy: bool = False) -> bool:
         """Create a backup before writing file
 
         Backup files with '.bak' suffix will be created in the same directory.
@@ -49,16 +51,16 @@ class SafeKits:
         return os.path.exists(pbak)
 
     @classmethod
-    def delete_backup(cls, path: str) -> bool:
+    def delete_backup(cls, path: Union[str, Path]) -> bool:
         """Delete backup after writing file"""
         if os.path.isfile(pbak := cls.get_backup_path(path)):
             os.remove(pbak)
         return not os.path.exists(pbak)
 
     @classmethod
-    def restore(cls, path: str) -> bool:
+    def restore(cls, path: Union[str, Path]) -> bool:
         """Restore (if backup exists) before reading file"""
-        pbak: str = cls.get_backup_path(path)
+        pbak: Path = cls.get_backup_path(path)
         if os.path.isfile(pbak):
             if os.path.isfile(path):
                 os.remove(path)
@@ -73,15 +75,14 @@ class SafeKits:
 
 class BaseFile():
 
-    def __init__(self, filepath: str,
-                 readonly: bool = True,
+    def __init__(self, filepath: Union[str, Path], readonly: bool = True,
                  encoding: Optional[str] = None,
                  truncate: bool = False) -> None:
         self.__fhandler: Optional[IO[Any]] = None
         self.__encoding: Optional[str] = encoding
+        self.__filepath: Path = Path(filepath)
         self.__readonly: bool = readonly
         self.__truncate: bool = truncate
-        self.__filepath: str = filepath
 
         if readonly and not os.path.exists(filepath):
             # When the file is writable, create it if not exists
@@ -97,7 +98,7 @@ class BaseFile():
         self.close()
 
     @property
-    def filepath(self) -> str:
+    def filepath(self) -> Path:
         return self.__filepath
 
     @property
@@ -160,7 +161,7 @@ class BaseFile():
 
 class SafeRead(BaseFile):
 
-    def __init__(self, filepath: str, encoding: Optional[str] = None) -> None:
+    def __init__(self, filepath: Union[str, Path], encoding: Optional[str] = None) -> None:  # noqa:E501
         super().__init__(filepath, readonly=True, encoding=encoding)
 
     def open(self) -> IO[Any]:
@@ -176,7 +177,7 @@ class SafeRead(BaseFile):
 
 class SafeWrite(BaseFile):
 
-    def __init__(self, filepath: str, encoding: Optional[str] = None, truncate: bool = False) -> None:  # noqa:E501
+    def __init__(self, filepath: Union[str, Path], encoding: Optional[str] = None, truncate: bool = False) -> None:  # noqa:E501
         super().__init__(filepath, readonly=False, encoding=encoding, truncate=truncate)  # noqa:E501
 
     def open(self) -> IO[Any]:
