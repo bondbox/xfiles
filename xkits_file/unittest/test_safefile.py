@@ -1,14 +1,15 @@
 # coding:utf-8
 
-import os
+from os.path import join
 from tempfile import TemporaryDirectory
-import unittest
+from unittest import TestCase
+from unittest import main
 from unittest import mock
 
 from xkits_file import safefile
 
 
-class TestSafeKits(unittest.TestCase):
+class TestSafeKits(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -26,12 +27,12 @@ class TestSafeKits(unittest.TestCase):
 
     def test_lock(self):
         with TemporaryDirectory() as temp:
-            with safefile.SafeKits.lock(os.path.join(temp, "test")):
+            with safefile.SafeKits.lock(join(temp, "test")):
                 pass
 
     def test_backup_and_restore(self):
         with TemporaryDirectory() as temp:
-            path = os.path.join(temp, "test")
+            path = join(temp, "test")
             self.assertTrue(safefile.SafeKits.create_backup(path, copy=False))
             with open(path, "w") as whdl:
                 whdl.write(self.text)
@@ -53,12 +54,12 @@ class TestSafeKits(unittest.TestCase):
             self.assertTrue(safefile.SafeKits.delete_backup(path))
 
 
-class TestBaseFile(unittest.TestCase):
+class TestBaseFile(TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls.temp = TemporaryDirectory()
-        cls.file = os.path.join(cls.temp.name, "test.txt")
+        cls.file = join(cls.temp.name, "test.txt")
         cls.text = b"bitag5e3ebfbhnxz270c8y8i3s53ruz1"
 
     @classmethod
@@ -134,12 +135,12 @@ class TestBaseFile(unittest.TestCase):
         self.assertIsNone(bfile.fhandler)
 
 
-class TestSafeReadWrite(unittest.TestCase):
+class TestSafeReadWrite(TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls.temp = TemporaryDirectory()
-        cls.file = os.path.join(cls.temp.name, "test.txt")
+        cls.file = join(cls.temp.name, "test.txt")
         cls.text = b"bitag5e3ebfbhnxz270c8y8i3s53ruz1"
 
     @classmethod
@@ -159,12 +160,12 @@ class TestSafeReadWrite(unittest.TestCase):
             self.assertEqual(fhdl.read(), self.text)
 
 
-class TestSafeFile(unittest.TestCase):
+class TestSafeFile(TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls.temp = TemporaryDirectory()
-        cls.file = os.path.join(cls.temp.name, "test.txt")
+        cls.file = join(cls.temp.name, "test.txt")
         cls.text = b"izun4drdy50si2xwu4zvmt90johbgewx"
 
     @classmethod
@@ -236,4 +237,4 @@ class TestSafeFile(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()

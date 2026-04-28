@@ -5,12 +5,13 @@ from os import getcwd
 from os import makedirs
 from os.path import join
 from tempfile import TemporaryDirectory
-import unittest
+from unittest import TestCase
+from unittest import main
 
 from xkits_file import download
 
 
-class TestDownloader(unittest.TestCase):
+class TestDownloader(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -75,4 +76,4 @@ class TestDownloader(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()

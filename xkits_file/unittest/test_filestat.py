@@ -1,26 +1,30 @@
 # coding:utf-8
 
 from grp import getgrgid
-import os
+from os import getgid
+from os import getuid
+from os import stat_result
+from os.path import join
 from pathlib import Path
 from pwd import getpwuid
 from tempfile import TemporaryDirectory
-import unittest
+from unittest import TestCase
+from unittest import main
 
 from xkits_file.filestat import FileStat
 
 
-class TestFileStat(unittest.TestCase):
+class TestFileStat(TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls.tdir = TemporaryDirectory()
-        cls.path = os.path.join(cls.tdir.name, "unittest")
+        cls.path = join(cls.tdir.name, "unittest")
         with open(cls.path, "w") as whdl:
             whdl.write("unittest")
         cls.file = FileStat(cls.path)
-        cls.username = getpwuid(os.getuid()).pw_name
-        cls.groupname = getgrgid(os.getgid()).gr_name
+        cls.username = getpwuid(getuid()).pw_name
+        cls.groupname = getgrgid(getgid()).gr_name
 
     @classmethod
     def tearDownClass(cls):
@@ -34,11 +38,11 @@ class TestFileStat(unittest.TestCase):
 
     def test_check_file(self):
         self.assertEqual(self.file.path, Path(self.path))
-        self.assertIsInstance(self.file.stat, os.stat_result)
+        self.assertIsInstance(self.file.stat, stat_result)
         self.file.username = self.username
         self.file.groupname = self.groupname
-        self.assertEqual(self.file.uid, os.getuid())
-        self.assertEqual(self.file.gid, os.getgid())
+        self.assertEqual(self.file.uid, getuid())
+        self.assertEqual(self.file.gid, getgid())
         self.assertEqual(self.file.username, self.username)
         self.assertEqual(self.file.groupname, self.groupname)
         self.file.chmod("777")
@@ -57,4 +61,4 @@ class TestFileStat(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()

@@ -2,12 +2,13 @@
 
 from os.path import join
 from tempfile import TemporaryDirectory
-import unittest
+from unittest import TestCase
+from unittest import main
 
 from xkits_file.linefile import LineFile
 
 
-class TestLineFile(unittest.TestCase):
+class TestLineFile(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -241,4 +242,4 @@ class TestLineFile(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()
