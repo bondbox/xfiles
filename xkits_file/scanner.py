@@ -168,8 +168,8 @@ class Scanner:
 
     @classmethod
     def load(cls,  # pylint: disable=R0913,R0914,R0915,R0917
-             paths: Sequence[str],
-             exclude: Optional[Sequence[str]] = None,
+             paths: Sequence[Union[str, Path]],
+             exclude: Optional[Sequence[Union[str, Path]]] = None,
              linkdir: bool = True,
              threads: int = THDNUM_DEFAULT,
              handler: Optional[Callable[[Object], bool]] = None):
