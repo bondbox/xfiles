@@ -1,9 +1,12 @@
 # coding:utf-8
 
+from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import Iterator
 from typing import List
+from typing import Optional
+from typing import Union
 
 
 class Variable:
@@ -40,3 +43,30 @@ class Variable:
         """
         # **(self.__kargs | kwargs) needs Python 3.9+
         return Variable(*self.__pargs, *args, **{**self.__kargs, **kwargs})
+
+    def populate(self, template: "Template") -> str:
+        return template.format(*self.__pargs, **self.__kargs)
+
+
+class Template:
+    PRESET: str
+
+    def __init__(self, text: Optional[str] = None):
+        self.__text: Optional[str] = text
+
+    @property
+    def source(self) -> str:
+        return self.__text or self.PRESET
+
+    def format(self, *args, **kwargs) -> str:
+        return self.source.format(*args, **kwargs)
+
+    @classmethod
+    def load(cls, filepath: Union[str, Path]) -> "Template":
+        with open(filepath, "r", encoding="utf-8") as rhdl:
+            return cls(text=rhdl.read())
+
+    def save(self, filepath: Union[str, Path], variable: Optional[Variable] = None) -> None:  # noqa:E501
+        text: str = variable.populate(self) if isinstance(variable, Variable) else self.source  # noqa:E501
+        with open(filepath, "w", encoding="utf-8") as whdl:
+            whdl.write(text)
