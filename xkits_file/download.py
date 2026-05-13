@@ -51,7 +51,7 @@ class Downloader:
 
     @property
     def temp(self) -> Path:
-        return Path(f"{self.path}.tmp")
+        return self.path.with_name(f"{self.path.name}.tmp")
 
     @property
     def stat(self) -> FileStat:
