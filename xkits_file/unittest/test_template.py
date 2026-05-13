@@ -1,12 +1,14 @@
 #!/usr/bin/python3
 # coding:utf-8
 
+from pathlib import Path
 from unittest import TestCase
 from unittest import main
 from unittest.mock import mock_open
 from unittest.mock import patch
 
 from xkits_file.template import Template
+from xkits_file.template import TemplateManagerPath
 from xkits_file.template import Variable
 
 
@@ -80,6 +82,42 @@ class TestTemplate(TestCase):
             self.assertEqual(template.format(1, name="Alpha"), "Hello, Alpha!")  # noqa:E501
             self.assertEqual(template.format(2, name="World"), "Hello, World!")  # noqa:E501
             mocked_file.assert_called_once_with("dummy.txt", "r", encoding="utf-8")  # noqa:E501
+
+
+class TestTemplateManagerPath(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.templates = Path(__file__).parent / "templates"
+        cls.name = "demo"
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    def setUp(self):
+        self.variables = Variable(name=self.name)
+        self.template_manager = TemplateManagerPath(self.variables)
+        self.template_manager.load(self.templates)
+
+    def tearDown(self):
+        pass
+
+    def test_iter(self):
+        for key, tpl in self.template_manager:
+            self.assertIs(self.template_manager[key], tpl)
+
+    def test_variable(self):
+        self.assertIs(self.template_manager.variable, self.variables)
+
+    def test_evaluate(self):
+        for path, content in self.template_manager.evaluate():
+            if path.name == "demo.txt":
+                self.assertEqual(content, self.name)
+
+    def test_scan_invalid_path(self):
+        with self.assertRaises(ValueError):
+            list(self.template_manager.scan(self.templates / "nonexistent"))
 
 
 if __name__ == "__main__":
