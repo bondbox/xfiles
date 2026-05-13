@@ -35,4 +35,5 @@ class Variable:
             A new Variable instance with shallow copies of args and kwargs,
             overridden by the provided arguments.
         """
-        return Variable(*self.__pargs, *args, **(self.__kargs | kwargs))
+        # **(self.__kargs | kwargs) needs Python 3.9+
+        return Variable(*self.__pargs, *args, **{**self.__kargs, **kwargs})
