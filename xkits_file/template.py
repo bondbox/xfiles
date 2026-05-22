@@ -60,7 +60,7 @@ class Template:
 
     @property
     def source(self) -> str:
-        return self.__text or self.PRESET
+        return self.__text if isinstance(self.__text, str) else self.PRESET
 
     def format(self, *args, **kwargs) -> str:
         return self.source.format(*args, **kwargs)
