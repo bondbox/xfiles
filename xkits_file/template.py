@@ -72,6 +72,13 @@ class Template:
 
     def save(self, filepath: Union[str, Path], variable: Optional[Variable] = None) -> None:  # noqa:E501
         text: str = variable.populate(self) if isinstance(variable, Variable) else self.source  # noqa:E501
+
+        if not isinstance(filepath, Path):
+            filepath = Path(filepath)
+
+        if not (parent := filepath.parent).exists():
+            parent.mkdir(parents=True)
+
         with open(filepath, "w", encoding="utf-8") as whdl:
             whdl.write(text)
 

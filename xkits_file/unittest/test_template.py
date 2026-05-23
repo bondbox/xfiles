@@ -2,6 +2,7 @@
 # coding:utf-8
 
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import TestCase
 from unittest import main
 from unittest.mock import mock_open
@@ -89,9 +90,10 @@ class TestTemplate(TestCase):
             mocked_file.assert_called_once_with("dummy.old", "r", encoding="utf-8")  # noqa:E501
 
     def test_save(self):
-        with patch("builtins.open", mock_open()) as mocked_file:
-            Template(text="Hello, {name}!").save(filepath="dummy.new")
-            mocked_file.assert_called_once_with("dummy.new", "w", encoding="utf-8")  # noqa:E501
+        with TemporaryDirectory() as tmpdir:
+            filepath: Path = Path(tmpdir) / "unittest" / "fake" / "dummy.new"
+            Template(text="Hello, {name}!").save(filepath=filepath.as_posix())
+            self.assertTrue(filepath.is_file())
 
 
 class TestTemplateManagerPath(TestCase):
