@@ -122,7 +122,7 @@ class TemplateManagerPath(TemplateManager[Path]):
             raise ValueError(f"Invalid path: {root} is not a directory")
 
         for item in root.rglob("*"):
-            if item.is_file():
+            if item.is_file() and "__pycache__" not in item.parts:
                 yield item.relative_to(root), Template.load(item)
 
     def load(self, base: Union[str, Path]) -> None:
