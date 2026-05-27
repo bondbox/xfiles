@@ -1,13 +1,18 @@
 MAKEFLAGS += --always-make
 
-VERSION := $(shell python3 setup.py --version)
+VERSION := $(shell python3 -c "from xkits_file.attribute import __package_vers__; print(__package_vers__)")
 
-all: build reinstall test
+all: build test
 
 
 release: all
-	git tag -a v${VERSION} -m "release v${VERSION}"
-	git push origin --tags
+	if [ -n "${VERSION}" ]; then \
+		git tag -a v${VERSION} -m "release v${VERSION}"; \
+		git push origin --tags; \
+	fi
+
+version:
+	@echo ${VERSION}
 
 
 clean-cover:
@@ -24,11 +29,11 @@ upload:
 
 build-prepare:
 	python3 -m pip install --upgrade -r requirements.txt
-	python3 -m pip install --upgrade xpip-build
 build-clean:
-	xpip-build --debug setup --clean
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	rm -rf build dist *.egg-info
 build: build-prepare build-clean
-	xpip-build --debug setup --all
+	python3 -m build --sdist --wheel
 
 
 install:

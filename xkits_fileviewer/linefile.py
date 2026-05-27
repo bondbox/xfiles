@@ -8,8 +8,8 @@ from xkits_command import Command
 from xkits_command import CommandArgument
 from xkits_command import CommandExecutor
 
-from xkits_file.attribute import __urlhome__
-from xkits_file.attribute import __version__
+from xkits_file.attribute import __package_vers__ as package_version
+from xkits_file.attribute import __project_home__ as project_homeurl
 from xkits_file.linefile import LineFile
 
 
@@ -37,5 +37,5 @@ def run_cmd(cmds: Command) -> int:  # pylint: disable=unused-argument
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     cmds = Command()
-    cmds.version = __version__
-    return cmds.run(root=add_cmd, argv=argv, epilog=f"For more, please visit {__urlhome__}.")  # noqa:E501
+    cmds.version = package_version
+    return cmds.run(root=add_cmd, argv=argv, epilog=f"For more, please visit {project_homeurl}.")  # noqa:E501

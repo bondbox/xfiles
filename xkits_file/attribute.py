@@ -1,10 +1,14 @@
 # coding:utf-8
 
-__project__ = "xkits-file"
-__version__ = "0.8.1"
-__urlhome__ = "https://github.com/bondbox/xfiles/"
-__description__ = "File module"
+# project info
+__project_name__ = "xfiles"
+__project_desc__ = "File module"
+__project_home__ = f"https://github.com/bondbox/{__project_name__}/"
 
-# author
-__author__ = "Mingzhe Zou"
-__author_email__ = "zoumingzhe@outlook.com"
+# package info
+__package_name__ = "xkits-file"
+__package_vers__ = "0.8.1"
+
+# author info
+__author_name__ = "Mingzhe Zou"
+__author_mail__ = "zoumingzhe@outlook.com"
