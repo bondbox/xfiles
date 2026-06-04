@@ -1,14 +1,18 @@
 [run]
-omit =
-    xkits_file/unittest/*
-    xkits_file/attribute.py
-    xkits_fileviewer/unittest/*
-    xkits_fileviewer/attribute.py
+omit = 
+	xkits_file/unittest/*
+	xkits_file/attribute.py
+	xkits_fileviewer/unittest/*
+source = 
+	xkits_file
+	xkits_fileviewer
 
 [report]
-exclude_lines =
-    pragma: no cover
-    raise NotImplementedError
-    if __name__ == .__main__.:
-    def __repr__
-    pass
+exclude_lines = 
+	pragma: no cover
+	raise NotImplementedError
+	if __name__ == .__main__.:
+	def __repr__
+	pass
+fail_under = 100
+

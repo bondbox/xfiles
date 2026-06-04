@@ -4,27 +4,23 @@ from pathlib import Path
 import sys
 from urllib.parse import urljoin
 
-from hatchling.metadata.plugin.interface import MetadataHookInterface
+from hatchling.metadata.plugin.interface import MetadataHookInterface  # pylint: disable=E0401
 
 sys.path.insert(0, str(Path(__file__).parent))
-sys.path.insert(0, str(Path(__file__).parent.parent / "xpip-upload"))
 
-from xkits_file.attribute import __author_mail__
-from xkits_file.attribute import __author_name__
-from xkits_file.attribute import __package_name__
-from xkits_file.attribute import __package_vers__
-from xkits_file.attribute import __project_desc__
-from xkits_file.attribute import __project_home__
+from xkits_file.attribute import __authors__  # pylint: disable=wrong-import-position
+from xkits_file.attribute import __package_name__  # pylint: disable=wrong-import-position
+from xkits_file.attribute import __package_vers__  # pylint: disable=wrong-import-position
+from xkits_file.attribute import __project_desc__  # pylint: disable=wrong-import-position
+from xkits_file.attribute import __project_home__  # pylint: disable=wrong-import-position
 
 
-class CustomMetadataHook(MetadataHookInterface):
+class CustomMetadataHook(MetadataHookInterface):  # pylint: disable=R0903
     def update(self, metadata):
         metadata["name"] = __package_name__
         metadata["version"] = __package_vers__
         metadata["description"] = __project_desc__
-        metadata["authors"] = [
-            {"name": __author_name__, "email": __author_mail__},
-        ]
+        metadata["authors"] = __authors__
         metadata["urls"] = {
             "Homepage": __project_home__,
             "Source Code": __project_home__,

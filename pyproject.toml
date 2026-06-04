@@ -1,46 +1,34 @@
 [build-system]
-requires = ["xpip-build>=1.4", "hatchling", "hatch-requirements-txt"]
 build-backend = "hatchling.build"
+requires = [ "hatch-requirements-txt", "hatchling", "xpip-build>=1.4",]
 
 [project]
-dynamic = ["name", "urls", "authors", "version", "description", "dependencies"]
-readme = {file = "readme.md", content-type = "text/markdown"}
-license-files = ["LICENSE"]
+classifiers = [ "Programming Language :: Python", "Programming Language :: Python :: 3",]
+dynamic = [ "name", "urls", "authors", "version", "description", "dependencies",]
+keywords = [ "file",]
+license-files = [ "LICENSE",]
 requires-python = ">=3.8"
-keywords = ["file"]
-classifiers = [
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-]
+
+[project.readme]
+content-type = "text/markdown"
+file = "readme.md"
 
 [project.scripts]
 fileviewer = "xkits_fileviewer:main"
 linefile = "xkits_fileviewer.linefile:main"
 
+[tool.hatch.build.targets.sdist]
+exclude = [ "xkits_file/unittest", "xkits_fileviewer/unittest",]
+packages = [ "xkits_file", "xkits_fileviewer",]
+
+[tool.hatch.build.targets.wheel]
+exclude = [ "xkits_file/unittest", "xkits_fileviewer/unittest",]
+packages = [ "xkits_file", "xkits_fileviewer",]
+
 [tool.hatch.metadata.hooks.custom]
 
 [tool.hatch.metadata.hooks.requirements_txt]
-files = ["requirements.txt"]
-
-[tool.hatch.build.targets.sdist]
-packages = [
-    "xkits_file",
-    "xkits_fileviewer",
-]
-exclude = [
-    "xkits_file/unittest",
-    "xkits_fileviewer/unittest",
-]
-
-[tool.hatch.build.targets.wheel]
-packages = [
-    "xkits_file",
-    "xkits_fileviewer",
-]
-exclude = [
-    "xkits_file/unittest",
-    "xkits_fileviewer/unittest",
-]
+files = [ "requirements.txt",]
 
 [tool.hatch.build.targets.sdist.force-include]
 

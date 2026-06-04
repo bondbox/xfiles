@@ -1,0 +1,12 @@
+[flake8]
+count = True
+exclude = 
+	xkits_file/unittest
+	xkits_fileviewer/unittest
+filename = *.py
+max-complexity = 25
+max-line-length = 127
+show-source = True
+statistics = True
+exit-zero = False
+

@@ -1,0 +1,44 @@
+name = "xfiles"
+home = "https://github.com/bondbox/xfiles/"
+description = "File module"
+keywords = [ "file",]
+version = "0.9"
+
+[authors.zoumingzhe]
+name = "Mingzhe Zou"
+email = "zoumingzhe@outlook.com"
+
+[packages.xkits-file]
+base = "."
+authors = [ "zoumingzhe",]
+keywords = []
+requirements = [ "xkits-command>=0.5", "xkits-lib>=0.4", "filelock",]
+max_complexity = 25
+max_line_length = 127
+
+[packages.xkits-file.modules.xkits-file]
+base = "xkits_file"
+omitted = [ "unittest/*", "attribute.py",]
+exclude = [ "unittest",]
+
+[packages.xkits-file.modules.xkits-fileviewer]
+base = "xkits_fileviewer"
+omitted = [ "unittest/*",]
+exclude = [ "unittest",]
+
+[packages.xkits-file.modules.xkits-file.include]
+
+[packages.xkits-file.modules.xkits-file.scripts]
+
+[packages.xkits-file.modules.xkits-file.templates]
+"__init__.py" = false
+"attribute.py" = true
+
+[packages.xkits-file.modules.xkits-fileviewer.include]
+
+[packages.xkits-file.modules.xkits-fileviewer.scripts]
+fileviewer = "main"
+linefile = "linefile:main"
+
+[packages.xkits-file.modules.xkits-fileviewer.templates]
+"__init__.py" = false
