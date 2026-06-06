@@ -5,9 +5,11 @@ from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import Generic
+from typing import Iterable
 from typing import Iterator
 from typing import List
 from typing import Optional
+from typing import Set
 from typing import Tuple
 from typing import TypeVar
 from typing import Union
@@ -125,8 +127,13 @@ class TemplateManagerPath(TemplateManager[Path]):
             if item.is_file() and "__pycache__" not in item.parts:
                 yield item.relative_to(root), Template.load(item)
 
-    def load(self, base: Union[str, Path]) -> None:
-        for name, tmpl in self.scan(base):
+    @classmethod
+    def pick(cls, base: Union[str, Path], names: Iterable[Union[str, Path]]) -> Iterator[Tuple[Path, Template]]:  # noqa:E501
+        target: Set[Path] = {Path(n) if isinstance(n, str) else n for n in names}  # noqa:E501
+        return ((name, tmpl) for name, tmpl in cls.scan(base) if name in target)  # noqa:E501
+
+    def load(self, base: Union[str, Path], include: Optional[Iterable[Union[str, Path]]] = None) -> None:  # noqa:E501
+        for name, tmpl in self.scan(base) if include is None else self.pick(base, include):  # noqa:E501
             self[name] = tmpl
 
     def dump(self, base: Union[str, Path], variable: Optional[Variable] = None, writable: bool = False) -> None:  # noqa:E501

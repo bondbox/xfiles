@@ -129,7 +129,7 @@ class TestTemplateManagerPath(TestCase):
 
     def test_scan_invalid_path(self):
         with self.assertRaises(ValueError):
-            list(self.template_manager.scan(self.templates / "nonexistent"))
+            list(self.template_manager.pick(self.templates / "nonexistent", []))  # noqa:E501
 
     def test_dump(self):
         with patch("builtins.open", mock_open()):
