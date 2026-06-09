@@ -133,7 +133,7 @@ class TestTemplateManagerPath(TestCase):
 
     def test_dump(self):
         with patch("builtins.open", mock_open()):
-            self.template_manager.dump(self.templates, allow_update=True)
+            self.template_manager.dump(self.templates, writable=True)
 
 
 if __name__ == "__main__":

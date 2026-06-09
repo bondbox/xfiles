@@ -129,10 +129,10 @@ class TemplateManagerPath(TemplateManager[Path]):
         for name, tmpl in self.scan(base):
             self[name] = tmpl
 
-    def dump(self, base: Union[str, Path], variable: Optional[Variable] = None, allow_update: bool = False) -> None:  # noqa:E501
+    def dump(self, base: Union[str, Path], variable: Optional[Variable] = None, writable: bool = False) -> None:  # noqa:E501
         root: Path = base if isinstance(base, Path) else Path(base)
         variables: Variable = variable or self.variable
 
         for name, tmpl in iter(self):
-            if not (path := root / name).exists() or allow_update:
+            if not (path := root / name).exists() or writable:
                 tmpl.save(filepath=path, variable=variables)
