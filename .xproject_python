@@ -2,7 +2,7 @@ name = "xfiles"
 home = "https://github.com/bondbox/xfiles/"
 description = "File module"
 keywords = [ "file",]
-version = "0.9"
+version = "0.9.1"
 
 [authors.zoumingzhe]
 name = "Mingzhe Zou"
