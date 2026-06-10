@@ -7,7 +7,7 @@ __project_home__ = "https://github.com/bondbox/xfiles/"
 
 # package info
 __package_name__ = "xkits-file"
-__package_vers__ = "0.9.1"
+__package_vers__ = "0.10"
 
 # authors info
 __authors__ = [
