@@ -4,10 +4,15 @@ requires = [ "hatch-requirements-txt", "hatchling", "xpip-build>=1.4",]
 
 [project]
 classifiers = [ "Programming Language :: Python", "Programming Language :: Python :: 3",]
-dynamic = [ "name", "urls", "authors", "version", "description", "dependencies",]
+description = "File module"
+dynamic = [ "dependencies", "version",]
 keywords = [ "file",]
 license-files = [ "LICENSE",]
+name = "xkits-file"
 requires-python = ">=3.8"
+[[project.authors]]
+name = "Mingzhe Zou"
+email = "zoumingzhe@outlook.com"
 
 [project.readme]
 content-type = "text/markdown"
@@ -17,6 +22,12 @@ file = "readme.md"
 fileviewer = "xkits_fileviewer:main"
 linefile = "xkits_fileviewer.linefile:main"
 
+[project.urls]
+Homepage = "https://github.com/bondbox/xfiles/"
+
+[tool.hatch.version]
+path = "xkits_file/attribute.py"
+
 [tool.hatch.build.targets.sdist]
 exclude = [ "xkits_file/unittest", "xkits_fileviewer/unittest",]
 packages = [ "xkits_file", "xkits_fileviewer",]
@@ -24,8 +35,6 @@ packages = [ "xkits_file", "xkits_fileviewer",]
 [tool.hatch.build.targets.wheel]
 exclude = [ "xkits_file/unittest", "xkits_fileviewer/unittest",]
 packages = [ "xkits_file", "xkits_fileviewer",]
-
-[tool.hatch.metadata.hooks.custom]
 
 [tool.hatch.metadata.hooks.requirements_txt]
 files = [ "requirements.txt",]

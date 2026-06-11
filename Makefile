@@ -1,6 +1,6 @@
 MAKEFLAGS += --always-make
 
-VERSION := $(shell python3 -c "from xkits_file.attribute import __package_vers__; print(__package_vers__)")
+VERSION ?= $(shell python3 -c "from xkits_file.attribute import __version__; print(__version__)")
 
 all: build test
 

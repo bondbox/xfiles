@@ -8,8 +8,8 @@ from xkits_command import Command
 from xkits_command import CommandArgument
 from xkits_command import CommandExecutor
 
-from xkits_file.attribute import __package_vers__ as package_version
 from xkits_file.attribute import __project_home__ as project_homeurl
+from xkits_file.attribute import __version__ as package_version
 from xkits_file.linefile import LineFile
 
 
